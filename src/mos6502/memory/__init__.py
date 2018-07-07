@@ -9,6 +9,7 @@ class Memory:
     """Class represents MOS 6502 memory."""
 
     SIZE = 0x1900  # Default memory size is 64 KB
+    PAGE = 0xff  # Page size. Default = 256 B
 
     def __init__(self, size=SIZE):
         """Initializes memory instance."""
