@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-__author__      = 'Radoslaw Matusiak'
-__copyright__   = 'Copyright (c) 2018 Radoslaw Matusiak'
-__license__     = 'MIT'
+__author__ = 'Radoslaw Matusiak'
+__copyright__ = 'Copyright (c) 2018 Radoslaw Matusiak'
+__license__ = 'MIT'
 
 
 import unittest
@@ -29,7 +29,7 @@ class TestRegs(unittest.TestCase):
         assert self.pc.value == 0, 'Invalid initial registry value!'
 
     def test_pc_valid_values(self):
-        for i in xrange(0, 0xffff):
+        for i in range(0, 0xffff):
             self.pc.value = i
             assert self.pc.value == i, 'Invalid PC registry value!'
 
@@ -41,9 +41,21 @@ class TestRegs(unittest.TestCase):
 
     def test_8_b_regs_valid_values(self):
         for r in self.regs_8_b:
-            for i in xrange(0, 0xff):
+            for i in range(0, 0xff):
                 r.value = i
                 assert r.value == i, 'Invalid registry value!'
+
+    def test_8_b_regs_valid_signed_values(self):
+        for r in self.regs_8_b:
+            for i in range(0, 0x7f):
+                r.value = i
+                assert r.signed == i, 'Invalid registry value ({0} != {1})!'.format(r.value, i)
+
+            v = -128
+            for i in range(0x80, 0xff):
+                r.value = i
+                assert r.signed == v, 'Invalid registry value ({0} != {1})!'.format(r.signed, v)
+                v += 1
 
     def test_8_b_regs_invalid_values(self):
         try:
@@ -60,6 +72,8 @@ class TestSR(unittest.TestCase):
 
     def test_initial_flags(self):
         assert self.sr.N == 0, 'Invalid SR.N flag value!'
+        assert self.sr.V == 0, 'Invalid SR.V flag value!'
+        assert self.sr.B == 0, 'Invalid SR.B flag value!'
 
     def test_flags(self):
         self.sr.N = 1

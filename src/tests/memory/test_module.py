@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-__author__      = 'Radoslaw Matusiak'
-__copyright__   = 'Copyright (c) 2018 Radoslaw Matusiak'
-__license__     = 'MIT'
+__author__ = 'Radoslaw Matusiak'
+__copyright__ = 'Copyright (c) 2018 Radoslaw Matusiak'
+__license__ = 'MIT'
 
 
 import unittest
@@ -21,7 +21,7 @@ class TestMemory(unittest.TestCase):
         assert len(self.memory._memory) == self.memory._size, 'Invalid initial memory size!'
 
     def test_simple_write(self):
-        for i in xrange(self.memory.SIZE):
+        for i in range(self.memory.SIZE):
             self.memory.write_word(i, 0xfa)
 
         assert self.memory._memory == [0xfa] * self.memory.SIZE, 'Memory write failed!'
@@ -29,7 +29,7 @@ class TestMemory(unittest.TestCase):
     def test_simple_read(self):
         random.seed(0xdeadbeef)
 
-        for i in xrange(self.memory.SIZE):
+        for i in range(self.memory.SIZE):
             val = random.randint(0, 255)
             self.memory.write_word(i, val)
 
@@ -45,7 +45,7 @@ class TestMemory(unittest.TestCase):
     def test_load(self):
         data = [0xde, 0xad, 0xbe, 0xef]
 
-        for i in xrange(self.memory.SIZE - len(data) - 1):
+        for i in range(self.memory.SIZE - len(data) - 1):
             self.memory.load(i, data)
             assert self.memory.read_word(i + 0) == data[0], 'Invalid memory data!'
             assert self.memory.read_word(i + 1) == data[1], 'Invalid memory data!'

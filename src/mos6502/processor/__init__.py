@@ -1,20 +1,25 @@
 #!/usr/bin/env python
 
-__author__      = 'Radoslaw Matusiak'
-__copyright__   = 'Copyright (c) 2018 Radoslaw Matusiak'
-__license__     = 'MIT'
+__author__ = 'Radoslaw Matusiak'
+__copyright__ = 'Copyright (c) 2018 Radoslaw Matusiak'
+__license__ = 'MIT'
 
 
-class Processor:
+from mos6502.helpers import to_signed_byte, to_unsigned_byte
+
+
+class MCU(object):
     """6502 processor."""
 
-    def __init__(self, pc):
-        self.a = A(0x00)
-        self.x = X(0x00)
-        self.y = Y(0x00)
-        self.sp = SP(0x00)
-        self.pc = PC(pc)
-        self.sr = SR(0x00)
+    def __init__(self):
+        # pylint: disable=C0103
+        self.a = A()
+        self.x = X()
+        self.y = Y()
+        self.sp = SP()
+        self.pc = PC()
+        self.sr = SR()
+        # pylint: enable=C0103
 
 
 class _Register(object):
@@ -34,24 +39,29 @@ class _Register(object):
 
     @value.setter
     def value(self, val):
+        val = val if val > 0 else to_unsigned_byte(val)
         self._value = val & self._mask
 
+    @property
+    def signed(self):
+        return to_signed_byte(self._value)
 
-class A(_Register):
+
+class A(_Register):  # pylint: disable=invalid-name
     """8 bit Accumulator register."""
 
     def __init__(self):
         _Register.__init__(self, 1)
 
 
-class X(_Register):
+class X(_Register):  # pylint: disable=invalid-name
     """8 bit X register."""
 
     def __init__(self):
         _Register.__init__(self, 1)
 
 
-class Y(_Register):
+class Y(_Register):  # pylint: disable=invalid-name
     """8 bit Y register."""
 
     def __init__(self):
@@ -92,11 +102,28 @@ class SR(_Register):
 
     def _get_bit_value(self, bit):
         """Helper bit getter."""
-        assert 0 < bit < 8, 'Bit number out of range'
+        assert 0 <= bit <= 7, 'Bit number out of range'
         mask = 1 << bit
 
         return (self.value & mask) >> bit
 
+    def set_flags(self, val, flags):
+        """
+        Set flags according to given value.
+
+        :param val: Value.
+        :param flags: Flags to set string, i.e. 'NZ'
+        :return: Nothing.
+        """
+        for flag in flags:
+            if flag == 'N':
+                self.N = 1 if val < 0 else 0
+            elif flag == 'Z':
+                self.Z = 1 if val == 0 else 0
+            elif flag == 'C':
+                self.C = 1 if val > 0xff else 0
+
+    # pylint: disable=C0103
     @property
     def N(self):
         """Negative flag getter."""
@@ -166,6 +193,8 @@ class SR(_Register):
     def C(self, val):
         """Carry flag setter."""
         self._set_bit_value(0, val)
+
+    # pylint: enable=C0103
 
 
 if __name__ == '__main__':
