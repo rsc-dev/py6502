@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-__author__      = 'Radoslaw Matusiak'
-__copyright__   = 'Copyright (c) 2018 Radoslaw Matusiak'
-__license__     = 'MIT'
+__author__ = 'Radoslaw Matusiak'
+__copyright__ = 'Copyright (c) 2018 Radoslaw Matusiak'
+__license__ = 'MIT'
 
 
 import unittest
@@ -21,23 +21,23 @@ class TestMemory(unittest.TestCase):
         assert len(self.memory._memory) == self.memory._size, 'Invalid initial memory size!'
 
     def test_simple_write(self):
-        for i in xrange(self.memory.SIZE):
-            self.memory.write_word(i, 0xfa)
+        for i in range(self.memory.SIZE):
+            self.memory.write_byte(i, 0xfa)
 
         assert self.memory._memory == [0xfa] * self.memory.SIZE, 'Memory write failed!'
 
     def test_simple_read(self):
         random.seed(0xdeadbeef)
 
-        for i in xrange(self.memory.SIZE):
+        for i in range(self.memory.SIZE):
             val = random.randint(0, 255)
-            self.memory.write_word(i, val)
+            self.memory.write_byte(i, val)
 
-            assert self.memory.read_word(i) == val, 'Invalid memory read value!'
+            assert self.memory.read_byte(i) == val, 'Invalid memory read value!'
 
     def test_out_of_range_assert(self):
         try:
-            self.memory.read_word(self.memory.SIZE)
+            self.memory.read_byte(self.memory.SIZE)
             assert False, 'Out of range assertion not thrown!'
         except AssertionError:
             assert True
@@ -45,12 +45,12 @@ class TestMemory(unittest.TestCase):
     def test_load(self):
         data = [0xde, 0xad, 0xbe, 0xef]
 
-        for i in xrange(self.memory.SIZE - len(data) - 1):
+        for i in range(self.memory.SIZE - len(data) - 1):
             self.memory.load(i, data)
-            assert self.memory.read_word(i + 0) == data[0], 'Invalid memory data!'
-            assert self.memory.read_word(i + 1) == data[1], 'Invalid memory data!'
-            assert self.memory.read_word(i + 2) == data[2], 'Invalid memory data!'
-            assert self.memory.read_word(i + 3) == data[3], 'Invalid memory data!'
+            assert self.memory.read_byte(i + 0) == data[0], 'Invalid memory data!'
+            assert self.memory.read_byte(i + 1) == data[1], 'Invalid memory data!'
+            assert self.memory.read_byte(i + 2) == data[2], 'Invalid memory data!'
+            assert self.memory.read_byte(i + 3) == data[3], 'Invalid memory data!'
 
     def test_load_out_of_range_assert(self):
         data = [0xde, 0xad, 0xbe, 0xef]
