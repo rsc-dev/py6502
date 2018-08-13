@@ -29,7 +29,7 @@ class TestADC(unittest.TestCase):
     def test_zeropage(self):
         self.mcu.a.value = 0x10
 
-        self.memory.write_byte(address=0xab, value=0x0a)
+        self.memory.write_word(address=0xab, value=0x0a)
         asm.ADC.execute(0x65, [0xab], self.mcu, self.memory)
 
         assert self.mcu.a.value == 0x1a
@@ -38,7 +38,7 @@ class TestADC(unittest.TestCase):
         self.mcu.a.value = 0x10
         self.mcu.x.value = 0x22
 
-        self.memory.write_byte(address=0xab, value=0x0a)
+        self.memory.write_word(address=0xab, value=0x0a)
         asm.ADC.execute(0x75, [0x89], self.mcu, self.memory)
 
         assert self.mcu.a.value == 0x1a
@@ -46,7 +46,7 @@ class TestADC(unittest.TestCase):
     def test_absolute(self):
         self.mcu.a.value = 0x10
 
-        self.memory.write_byte(address=0xf01, value=0x0a)
+        self.memory.write_word(address=0xf01, value=0x0a)
         asm.ADC.execute(0x6d, [0x01, 0x0f], self.mcu, self.memory)
 
         assert self.mcu.a.value == 0x1a
@@ -55,7 +55,7 @@ class TestADC(unittest.TestCase):
         self.mcu.a.value = 0x10
         self.mcu.x.value = 0x01
 
-        self.memory.write_byte(address=0xf01, value=0x0a)
+        self.memory.write_word(address=0xf01, value=0x0a)
         asm.ADC.execute(0x7d, [0x00, 0x0f], self.mcu, self.memory)
 
         assert self.mcu.a.value == 0x1a
@@ -64,7 +64,7 @@ class TestADC(unittest.TestCase):
         self.mcu.a.value = 0x10
         self.mcu.y.value = 0x01
 
-        self.memory.write_byte(address=0xf01, value=0x0a)
+        self.memory.write_word(address=0xf01, value=0x0a)
         asm.ADC.execute(0x79, [0x00, 0x0f], self.mcu, self.memory)
 
         assert self.mcu.a.value == 0x1a
@@ -73,7 +73,7 @@ class TestADC(unittest.TestCase):
         self.mcu.a.value = 0x10
         self.mcu.x.value = 0xaa
 
-        self.memory.write_byte(address=0xab, value=0x0a)
+        self.memory.write_word(address=0xab, value=0x0a)
         asm.ADC.execute(0x61, [0x01], self.mcu, self.memory)
 
         assert self.mcu.a.value == 0x1a
@@ -82,7 +82,7 @@ class TestADC(unittest.TestCase):
         self.mcu.a.value = 0x10
         self.mcu.y.value = 0xaa
 
-        self.memory.write_byte(address=0xab, value=0x0a)
+        self.memory.write_word(address=0xab, value=0x0a)
         asm.ADC.execute(0x71, [0x01], self.mcu, self.memory)
 
         assert self.mcu.a.value == 0x1a

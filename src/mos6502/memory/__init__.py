@@ -25,15 +25,9 @@ class Memory(object):
         :param address: Memory address.
         :return: Byte value from given address.
         """
-        return self.read_byte(address)
+        return self.read_word(address)
 
-    def read_byte(self, address):
-        """
-        Read byte from given memory address.
-
-        :param address: Memory address.
-        :return: Byte value from given memory address.
-        """
+    def read_word(self, address):
         assert address < self._size, 'Address out of space!'
         return self._memory[address]
 
@@ -85,8 +79,8 @@ class Memory(object):
         :return: Nothing.
         """
         assert address + len(data) < self._size, 'Too much data to write'
-        for i, val in enumerate(data):
-            self._memory[address + i] = val
+        for i in range(len(data)):
+            self._memory[address + i] = data[i]
 
 
 if __name__ == '__main__':

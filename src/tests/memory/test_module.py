@@ -22,7 +22,7 @@ class TestMemory(unittest.TestCase):
 
     def test_simple_write(self):
         for i in range(self.memory.SIZE):
-            self.memory.write_byte(i, 0xfa)
+            self.memory.write_word(i, 0xfa)
 
         assert self.memory._memory == [0xfa] * self.memory.SIZE, 'Memory write failed!'
 
