@@ -1030,7 +1030,17 @@ class LDY(Instruction):  # pylint: disable=too-few-public-methods
 
 class LSR(Instruction):  # pylint: disable=too-few-public-methods
     """Shift One Bit Right (Memory or Accumulator)"""
-    # TODO: Implement
+
+    MNEMONIC = 'LSR'
+    # Dict of tuples (#address_mode, #bytes, #cycles, #page_boundary_cycles) keyed by #opcode
+    INSTRUCTIONS = {
+        0x4A: (AddressMode.ACCUMULATOR, 1, 2, 0),
+        0x46: (AddressMode.ZEROPAGE, 2, 5, 0),
+        0x56: (AddressMode.ZEROPAGE_X_INDEXED, 2, 6, 0),
+        0x4E: (AddressMode.ABSOLUTE, 3, 6, 0),
+        0x5E: (AddressMode.ABSOLUTE_X_INDEXED, 3, 7, 0)
+    }
+
     @staticmethod
     def execute(opcode, bytez, mcu, memory):
         """
@@ -1042,7 +1052,19 @@ class LSR(Instruction):  # pylint: disable=too-few-public-methods
         :param memory: Memory instance.
         :return: Nothing.
         """
-        pass
+        mode, _, _, _ = LSR.INSTRUCTIONS[opcode]
+        operand, address = AddressMode.calculate_operand(mode, bytez, mcu, memory)
+
+        carry = operand & 0x01
+        val = operand >> 1
+
+        if opcode == 0x4A:
+            mcu.a.value = val
+        else:
+            memory.write_byte(address, val)
+
+        mcu.sr.set_flags(val, 'Z')
+        mcu.sr.C = carry
 
 
 class NOP(Instruction):  # pylint: disable=too-few-public-methods
@@ -1182,7 +1204,7 @@ class PLP(Instruction):  # pylint: disable=too-few-public-methods
     MNEMONIC = 'PLP'
     # Dict of tuples (#address_mode, #bytes, #cycles, #page_boundary_cycles) keyed by #opcode
     INSTRUCTIONS = {
-        0x28: (AddressMode.IMPLIED, 1, 4, 0),
+        0x28: (AddressMode.IMPLIED, 1, 4, 0)
     }
 
     @staticmethod
@@ -1202,7 +1224,17 @@ class PLP(Instruction):  # pylint: disable=too-few-public-methods
 
 class ROL(Instruction):  # pylint: disable=too-few-public-methods
     """Rotate One Bit Left (Memory or Accumulator)"""
-    # TODO: Implement
+
+    MNEMONIC = 'ROL'
+    # Dict of tuples (#address_mode, #bytes, #cycles, #page_boundary_cycles) keyed by #opcode
+    INSTRUCTIONS = {
+        0x2A: (AddressMode.ACCUMULATOR, 1, 2, 0),
+        0x26: (AddressMode.ZEROPAGE, 2, 5, 0),
+        0x36: (AddressMode.ZEROPAGE_X_INDEXED, 2, 6, 0),
+        0x2E: (AddressMode.ABSOLUTE, 3, 6, 0),
+        0x3E: (AddressMode.ABSOLUTE_X_INDEXED, 3, 7, 0)
+    }
+
     @staticmethod
     def execute(opcode, bytez, mcu, memory):
         """
@@ -1214,12 +1246,34 @@ class ROL(Instruction):  # pylint: disable=too-few-public-methods
         :param memory: Memory instance.
         :return: Nothing.
         """
-        pass
+        mode, _, _, _ = ROL.INSTRUCTIONS[opcode]
+        operand, address = AddressMode.calculate_operand(mode, bytez, mcu, memory)
+
+        c_flag = (operand & 255) >> 7
+        operand = ((operand << 1) | mcu.sr.C)
+        mcu.sr.C = c_flag
+
+        if address is not None:
+            memory.write_byte(address, operand)
+        else:
+            mcu.a.value = operand
+
+        mcu.sr.set_flags(operand, 'NZC')
 
 
 class ROR(Instruction):  # pylint: disable=too-few-public-methods
     """Rotate One Bit Right (Memory or Accumulator)"""
-    # TODO: Implements
+
+    MNEMONIC = 'ROR'
+    # Dict of tuples (#address_mode, #bytes, #cycles, #page_boundary_cycles) keyed by #opcode
+    INSTRUCTIONS = {
+        0x6A: (AddressMode.ACCUMULATOR, 1, 2, 0),
+        0x66: (AddressMode.ZEROPAGE, 2, 5, 0),
+        0x76: (AddressMode.ZEROPAGE_X_INDEXED, 2, 6, 0),
+        0x6E: (AddressMode.ABSOLUTE, 3, 6, 0),
+        0x7E: (AddressMode.ABSOLUTE_X_INDEXED, 3, 7, 0)
+    }
+
     @staticmethod
     def execute(opcode, bytez, mcu, memory):
         """
@@ -1231,7 +1285,19 @@ class ROR(Instruction):  # pylint: disable=too-few-public-methods
         :param memory: Memory instance.
         :return: Nothing.
         """
-        pass
+        mode, _, _, _ = ROR.INSTRUCTIONS[opcode]
+        operand, address = AddressMode.calculate_operand(mode, bytez, mcu, memory)
+
+        c_flag = (operand & 1)
+        operand = ((operand >> 1) | (mcu.sr.C << 7))
+        mcu.sr.C = c_flag
+
+        if address is not None:
+            memory.write_byte(address, operand)
+        else:
+            mcu.a.value = operand
+
+        mcu.sr.set_flags(operand, 'NZC')
 
 
 class RTI(Instruction):  # pylint: disable=too-few-public-methods
@@ -1267,7 +1333,7 @@ class RTS(Instruction):  # pylint: disable=too-few-public-methods
     MNEMONIC = 'RTS'
     # Dict of tuples (#address_mode, #bytes, #cycles, #page_boundary_cycles) keyed by #opcode
     INSTRUCTIONS = {
-        0x60: (AddressMode.IMPLIED, 1, 6, 0),
+        0x60: (AddressMode.IMPLIED, 1, 6, 0)
     }
 
     @staticmethod
@@ -1290,6 +1356,19 @@ class RTS(Instruction):  # pylint: disable=too-few-public-methods
 class SBC(Instruction):  # pylint: disable=too-few-public-methods
     """Subtract Memory from Accumulator with Borrow"""
 
+    MNEMONIC = 'SBC'
+    # Dict of tuples (#address_mode, #bytes, #cycles, #page_boundary_cycles) keyed by #opcode
+    INSTRUCTIONS = {
+        0xE9: (AddressMode.IMMEDIATE, 2, 2, 0),
+        0xE5: (AddressMode.ZEROPAGE, 2, 3, 0),
+        0xF5: (AddressMode.ZEROPAGE_X_INDEXED, 2, 4, 0),
+        0xED: (AddressMode.ABSOLUTE, 3, 4, 0),
+        0xFD: (AddressMode.ABSOLUTE_X_INDEXED, 3, 4, 1),
+        0xF9: (AddressMode.ABSOLUTE_Y_INDEXED, 3, 4, 1),
+        0xE1: (AddressMode.INDEXED_X_INDIRECT, 2, 6, 0),
+        0xF1: (AddressMode.INDIRECT_Y_INDEXED, 2, 5, 1)
+    }
+
     @staticmethod
     def execute(opcode, bytez, mcu, memory):
         """
@@ -1301,14 +1380,27 @@ class SBC(Instruction):  # pylint: disable=too-few-public-methods
         :param memory: Memory instance.
         :return: Nothing.
         """
-        pass
+        mode, _, _, _ = SBC.INSTRUCTIONS[opcode]
+        operand, _ = AddressMode.calculate_operand(mode, bytez, mcu, memory)
+
+        val = mcu.a.signed - operand - mcu.sr.C
+
+        mcu.a.value = val
+
+        mcu.sr.set_flags(val, 'NZCV')
 
 
 class SEC(Instruction):  # pylint: disable=too-few-public-methods
     """Set Carry Flag"""
 
+    MNEMONIC = 'SEC'
+    # Dict of tuples (#address_mode, #bytes, #cycles, #page_boundary_cycles) keyed by #opcode
+    INSTRUCTIONS = {
+        0x38: (AddressMode.IMPLIED, 1, 2, 0),
+    }
+
     @staticmethod
-    def execute(opcode, bytez, mcu, memory):
+    def execute(opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
         """
         Execute command.
 
@@ -1318,14 +1410,20 @@ class SEC(Instruction):  # pylint: disable=too-few-public-methods
         :param memory: Memory instance.
         :return: Nothing.
         """
-        pass
+        mcu.sr.C = 1
 
 
 class SED(Instruction):  # pylint: disable=too-few-public-methods
     """Set Decimal Flag"""
 
+    MNEMONIC = 'SED'
+    # Dict of tuples (#address_mode, #bytes, #cycles, #page_boundary_cycles) keyed by #opcode
+    INSTRUCTIONS = {
+        0xF8: (AddressMode.IMPLIED, 1, 2, 0),
+    }
+
     @staticmethod
-    def execute(opcode, bytez, mcu, memory):
+    def execute(opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
         """
         Execute command.
 
@@ -1335,14 +1433,20 @@ class SED(Instruction):  # pylint: disable=too-few-public-methods
         :param memory: Memory instance.
         :return: Nothing.
         """
-        pass
+        mcu.sr.D = 1
 
 
 class SEI(Instruction):  # pylint: disable=too-few-public-methods
     """Set Interrupt Disable Status"""
 
+    MNEMONIC = 'SEI'
+    # Dict of tuples (#address_mode, #bytes, #cycles, #page_boundary_cycles) keyed by #opcode
+    INSTRUCTIONS = {
+        0x78: (AddressMode.IMPLIED, 1, 2, 0),
+    }
+
     @staticmethod
-    def execute(opcode, bytez, mcu, memory):
+    def execute(opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
         """
         Execute command.
 
@@ -1352,12 +1456,24 @@ class SEI(Instruction):  # pylint: disable=too-few-public-methods
         :param memory: Memory instance.
         :return: Nothing.
         """
-        pass
+        mcu.sr.I = 1
 
 
 class STA(Instruction):  # pylint: disable=too-few-public-methods
     """Store Accumulator in Memory"""
 
+    MNEMONIC = 'STA'
+    # Dict of tuples (#address_mode, #bytes, #cycles, #page_boundary_cycles) keyed by #opcode
+    INSTRUCTIONS = {
+        0x85: (AddressMode.ZEROPAGE, 2, 3, 0),
+        0x95: (AddressMode.ZEROPAGE_X_INDEXED, 2, 4, 0),
+        0x8D: (AddressMode.ABSOLUTE, 3, 4, 0),
+        0x9D: (AddressMode.ABSOLUTE_X_INDEXED, 3, 5, 0),
+        0x99: (AddressMode.ABSOLUTE_Y_INDEXED, 3, 5, 0),
+        0x81: (AddressMode.INDEXED_X_INDIRECT, 2, 6, 0),
+        0x91: (AddressMode.INDIRECT_Y_INDEXED, 2, 6, 0),
+    }
+
     @staticmethod
     def execute(opcode, bytez, mcu, memory):
         """
@@ -1369,12 +1485,23 @@ class STA(Instruction):  # pylint: disable=too-few-public-methods
         :param memory: Memory instance.
         :return: Nothing.
         """
-        pass
+        mode, _, _, _ = STA.INSTRUCTIONS[opcode]
+        _, address = AddressMode.calculate_operand(mode, bytez, mcu, memory)
+
+        memory.write_byte(address, mcu.a.value)
 
 
 class STX(Instruction):  # pylint: disable=too-few-public-methods
     """Store Index X in Memory"""
 
+    MNEMONIC = 'STX'
+    # Dict of tuples (#address_mode, #bytes, #cycles, #page_boundary_cycles) keyed by #opcode
+    INSTRUCTIONS = {
+        0x86: (AddressMode.ZEROPAGE, 2, 3, 0),
+        0x96: (AddressMode.ZEROPAGE_Y_INDEXED, 2, 4, 0),
+        0x8E: (AddressMode.ABSOLUTE, 3, 4, 0),
+    }
+
     @staticmethod
     def execute(opcode, bytez, mcu, memory):
         """
@@ -1386,12 +1513,23 @@ class STX(Instruction):  # pylint: disable=too-few-public-methods
         :param memory: Memory instance.
         :return: Nothing.
         """
-        pass
+        mode, _, _, _ = STX.INSTRUCTIONS[opcode]
+        _, address = AddressMode.calculate_operand(mode, bytez, mcu, memory)
+
+        memory.write_byte(address, mcu.x.value)
 
 
 class STY(Instruction):  # pylint: disable=too-few-public-methods
     """Sore Index Y in Memory"""
 
+    MNEMONIC = 'STY'
+    # Dict of tuples (#address_mode, #bytes, #cycles, #page_boundary_cycles) keyed by #opcode
+    INSTRUCTIONS = {
+        0x84: (AddressMode.ZEROPAGE, 2, 3, 0),
+        0x94: (AddressMode.ZEROPAGE_Y_INDEXED, 2, 4, 0),
+        0x8C: (AddressMode.ABSOLUTE, 3, 4, 0),
+    }
+
     @staticmethod
     def execute(opcode, bytez, mcu, memory):
         """
@@ -1403,14 +1541,23 @@ class STY(Instruction):  # pylint: disable=too-few-public-methods
         :param memory: Memory instance.
         :return: Nothing.
         """
-        pass
+        mode, _, _, _ = STY.INSTRUCTIONS[opcode]
+        _, address = AddressMode.calculate_operand(mode, bytez, mcu, memory)
+
+        memory.write_byte(address, mcu.y.value)
 
 
 class TAX(Instruction):  # pylint: disable=too-few-public-methods
     """Transfer Accumulator to Index X"""
 
+    MNEMONIC = 'TAX'
+    # Dict of tuples (#address_mode, #bytes, #cycles, #page_boundary_cycles) keyed by #opcode
+    INSTRUCTIONS = {
+        0xAA: (AddressMode.IMPLIED, 1, 2, 0)
+    }
+
     @staticmethod
-    def execute(opcode, bytez, mcu, memory):
+    def execute(opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
         """
         Execute command.
 
@@ -1420,14 +1567,22 @@ class TAX(Instruction):  # pylint: disable=too-few-public-methods
         :param memory: Memory instance.
         :return: Nothing.
         """
-        pass
+        mcu.x.value = mcu.a.value
+
+        mcu.sr.set_flags(mcu.x.value, 'NZ')
 
 
 class TAY(Instruction):  # pylint: disable=too-few-public-methods
     """Transfer Accumulator to Index Y"""
 
+    MNEMONIC = 'TAY'
+    # Dict of tuples (#address_mode, #bytes, #cycles, #page_boundary_cycles) keyed by #opcode
+    INSTRUCTIONS = {
+        0xA8: (AddressMode.IMPLIED, 1, 2, 0)
+    }
+
     @staticmethod
-    def execute(opcode, bytez, mcu, memory):
+    def execute(opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
         """
         Execute command.
 
@@ -1437,14 +1592,22 @@ class TAY(Instruction):  # pylint: disable=too-few-public-methods
         :param memory: Memory instance.
         :return: Nothing.
         """
-        pass
+        mcu.y.value = mcu.a.value
+
+        mcu.sr.set_flags(mcu.y.value, 'NZ')
 
 
 class TSX(Instruction):  # pylint: disable=too-few-public-methods
     """Transfer Stack Pointer to Index X"""
 
+    MNEMONIC = 'TSX'
+    # Dict of tuples (#address_mode, #bytes, #cycles, #page_boundary_cycles) keyed by #opcode
+    INSTRUCTIONS = {
+        0xBA: (AddressMode.IMPLIED, 1, 2, 0)
+    }
+
     @staticmethod
-    def execute(opcode, bytez, mcu, memory):
+    def execute(opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
         """
         Execute command.
 
@@ -1454,14 +1617,22 @@ class TSX(Instruction):  # pylint: disable=too-few-public-methods
         :param memory: Memory instance.
         :return: Nothing.
         """
-        pass
+        mcu.x.value = mcu.sp.value
+
+        mcu.sr.set_flags(mcu.x.value, 'NZ')
 
 
 class TXA(Instruction):  # pylint: disable=too-few-public-methods
     """Transfer Index X to Accumulator"""
 
+    MNEMONIC = 'TXA'
+    # Dict of tuples (#address_mode, #bytes, #cycles, #page_boundary_cycles) keyed by #opcode
+    INSTRUCTIONS = {
+        0x8A: (AddressMode.IMPLIED, 1, 2, 0)
+    }
+
     @staticmethod
-    def execute(opcode, bytez, mcu, memory):
+    def execute(opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
         """
         Execute command.
 
@@ -1471,14 +1642,22 @@ class TXA(Instruction):  # pylint: disable=too-few-public-methods
         :param memory: Memory instance.
         :return: Nothing.
         """
-        pass
+        mcu.a.value = mcu.x.value
+
+        mcu.sr.set_flags(mcu.a.value, 'NZ')
 
 
 class TXS(Instruction):  # pylint: disable=too-few-public-methods
     """Transfer Index X to Stack Register"""
 
+    MNEMONIC = 'TXS'
+    # Dict of tuples (#address_mode, #bytes, #cycles, #page_boundary_cycles) keyed by #opcode
+    INSTRUCTIONS = {
+        0x9A: (AddressMode.IMPLIED, 1, 2, 0)
+    }
+
     @staticmethod
-    def execute(opcode, bytez, mcu, memory):
+    def execute(opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
         """
         Execute command.
 
@@ -1488,14 +1667,20 @@ class TXS(Instruction):  # pylint: disable=too-few-public-methods
         :param memory: Memory instance.
         :return: Nothing.
         """
-        pass
+        mcu.sp.value = mcu.x.value
 
 
 class TYA(Instruction):  # pylint: disable=too-few-public-methods
     """Transfer Index Y to Accumulator"""
 
+    MNEMONIC = 'TYA'
+    # Dict of tuples (#address_mode, #bytes, #cycles, #page_boundary_cycles) keyed by #opcode
+    INSTRUCTIONS = {
+        0x98: (AddressMode.IMPLIED, 1, 2, 0)
+    }
+
     @staticmethod
-    def execute(opcode, bytez, mcu, memory):
+    def execute(opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
         """
         Execute command.
 
@@ -1505,7 +1690,9 @@ class TYA(Instruction):  # pylint: disable=too-few-public-methods
         :param memory: Memory instance.
         :return: Nothing.
         """
-        pass
+        mcu.a.value = mcu.y.value
+
+        mcu.sr.set_flags(mcu.a.value, 'NZ')
 
 
 if __name__ == '__main__':
