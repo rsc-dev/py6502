@@ -121,8 +121,8 @@ class ADC(Instruction):  # pylint: disable=too-few-public-methods
         0x71: (AddressMode.INDIRECT_Y_INDEXED, 2, 5, 1)
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):
         """
         Execute command.
 
@@ -132,7 +132,7 @@ class ADC(Instruction):  # pylint: disable=too-few-public-methods
         :param memory: Memory instance.
         :return: Nothing.
         """
-        mode, _, _, _ = ADC.INSTRUCTIONS[opcode]
+        mode, _, _, _ = cls.INSTRUCTIONS[opcode]
         operand, _ = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
         val = mcu.a.signed + operand + mcu.sr.C
@@ -158,8 +158,8 @@ class AND(Instruction):  # pylint: disable=too-few-public-methods
         0x31: (AddressMode.INDIRECT_Y_INDEXED, 2, 5, 1)
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):
         """
         Execute command.
 
@@ -169,7 +169,7 @@ class AND(Instruction):  # pylint: disable=too-few-public-methods
         :param memory: Memory instance.
         :return: Nothing.
         """
-        mode, _, _, _ = AND.INSTRUCTIONS[opcode]
+        mode, _, _, _ = cls.INSTRUCTIONS[opcode]
         operand, _ = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
         val = mcu.a.value & operand
@@ -191,8 +191,8 @@ class ASL(Instruction):  # pylint: disable=too-few-public-methods
         0x1E: (AddressMode.ABSOLUTE_X_INDEXED, 3, 7, 0)
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):
         """
         Execute command.
 
@@ -202,7 +202,7 @@ class ASL(Instruction):  # pylint: disable=too-few-public-methods
         :param memory: Memory instance.
         :return: Nothing.
         """
-        mode, _, _, _ = ASL.INSTRUCTIONS[opcode]
+        mode, _, _, _ = cls.INSTRUCTIONS[opcode]
         operand, _ = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
         val = mcu.a.value << operand
@@ -220,8 +220,8 @@ class BCC(Instruction):  # pylint: disable=too-few-public-methods
         0x90: (AddressMode.RELATIVE, 2, 3, 1)
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):
         """
         Execute command.
 
@@ -231,7 +231,7 @@ class BCC(Instruction):  # pylint: disable=too-few-public-methods
         :param memory: Memory instance.
         :return: Nothing.
         """
-        mode, _, _, _ = BCC.INSTRUCTIONS[opcode]
+        mode, _, _, _ = cls.INSTRUCTIONS[opcode]
         operand, _ = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
         if mcu.sr.C == 0:
@@ -247,8 +247,8 @@ class BCS(Instruction):  # pylint: disable=too-few-public-methods
         0xB0: (AddressMode.RELATIVE, 2, 3, 1)
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):
         """
         Execute command.
 
@@ -258,7 +258,7 @@ class BCS(Instruction):  # pylint: disable=too-few-public-methods
         :param memory: Memory instance.
         :return: Nothing.
         """
-        mode, _, _, _ = BCS.INSTRUCTIONS[opcode]
+        mode, _, _, _ = cls.INSTRUCTIONS[opcode]
         operand, _ = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
         if mcu.sr.C == 0:
@@ -274,8 +274,8 @@ class BEQ(Instruction):  # pylint: disable=too-few-public-methods
         0xF0: (AddressMode.RELATIVE, 2, 3, 1)
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):
         """
         Execute command.
 
@@ -285,7 +285,7 @@ class BEQ(Instruction):  # pylint: disable=too-few-public-methods
         :param memory: Memory instance.
         :return: Nothing.
         """
-        mode, _, _, _ = BEQ.INSTRUCTIONS[opcode]
+        mode, _, _, _ = cls.INSTRUCTIONS[opcode]
         operand, _ = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
         if mcu.sr.Z == 1:
@@ -302,8 +302,8 @@ class BIT(Instruction):  # pylint: disable=too-few-public-methods
         0x2C: (AddressMode.RELATIVE, 3, 4, 0)
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):
         """
         Execute command.
 
@@ -313,7 +313,7 @@ class BIT(Instruction):  # pylint: disable=too-few-public-methods
         :param memory: Memory instance.
         :return: Nothing.
         """
-        mode, _, _, _ = ASL.INSTRUCTIONS[opcode]
+        mode, _, _, _ = cls.INSTRUCTIONS[opcode]
         operand, _ = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
         val = mcu.a.value << operand
@@ -334,8 +334,8 @@ class BMI(Instruction):  # pylint: disable=too-few-public-methods
         0x30: (AddressMode.RELATIVE, 2, 3, 1)
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):
         """
         Execute command.
 
@@ -345,7 +345,7 @@ class BMI(Instruction):  # pylint: disable=too-few-public-methods
         :param memory: Memory instance.
         :return: Nothing.
         """
-        mode, _, _, _ = BMI.INSTRUCTIONS[opcode]
+        mode, _, _, _ = cls.INSTRUCTIONS[opcode]
         operand, _ = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
         if mcu.sr.N == 1:
@@ -361,8 +361,8 @@ class BNE(Instruction):  # pylint: disable=too-few-public-methods
         0xD0: (AddressMode.RELATIVE, 2, 3, 1)
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):
         """
         Execute command.
 
@@ -372,7 +372,7 @@ class BNE(Instruction):  # pylint: disable=too-few-public-methods
         :param memory: Memory instance.
         :return: Nothing.
         """
-        mode, _, _, _ = BNE.INSTRUCTIONS[opcode]
+        mode, _, _, _ = cls.INSTRUCTIONS[opcode]
         operand, _ = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
         if mcu.sr.Z == 0:
@@ -388,8 +388,8 @@ class BPL(Instruction):  # pylint: disable=too-few-public-methods
         0x10: (AddressMode.RELATIVE, 2, 3, 1)
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):
         """
         Execute command.
 
@@ -399,7 +399,7 @@ class BPL(Instruction):  # pylint: disable=too-few-public-methods
         :param memory: Memory instance.
         :return: Nothing.
         """
-        mode, _, _, _ = BPL.INSTRUCTIONS[opcode]
+        mode, _, _, _ = cls.INSTRUCTIONS[opcode]
         operand, _ = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
         if mcu.sr.N == 0:
@@ -415,8 +415,8 @@ class BRK(Instruction):  # pylint: disable=too-few-public-methods
         0x00: (AddressMode.IMPLIED, 1, 7, 0)
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):
         """
         Execute command.
 
@@ -438,8 +438,8 @@ class BVC(Instruction):  # pylint: disable=too-few-public-methods
         0x50: (AddressMode.RELATIVE, 2, 3, 1)
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):
         """
         Execute command.
 
@@ -449,7 +449,7 @@ class BVC(Instruction):  # pylint: disable=too-few-public-methods
         :param memory: Memory instance.
         :return: Nothing.
         """
-        mode, _, _, _ = BVC.INSTRUCTIONS[opcode]
+        mode, _, _, _ = cls.INSTRUCTIONS[opcode]
         operand, _ = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
         if mcu.sr.V == 0:
@@ -465,8 +465,8 @@ class BVS(Instruction):  # pylint: disable=too-few-public-methods
         0x70: (AddressMode.RELATIVE, 2, 3, 1)
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):
         """
         Execute command.
 
@@ -476,7 +476,7 @@ class BVS(Instruction):  # pylint: disable=too-few-public-methods
         :param memory: Memory instance.
         :return: Nothing.
         """
-        mode, _, _, _ = BVS.INSTRUCTIONS[opcode]
+        mode, _, _, _ = cls.INSTRUCTIONS[opcode]
         operand, _ = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
         if mcu.sr.V == 1:
@@ -492,8 +492,8 @@ class CLC(Instruction):  # pylint: disable=too-few-public-methods
         0x18: (AddressMode.IMPLIED, 1, 2, 0)
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
         """
         Execute command.
 
@@ -515,8 +515,8 @@ class CLD(Instruction):  # pylint: disable=too-few-public-methods
         0xD8: (AddressMode.IMPLIED, 1, 2, 0)
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
         """
         Execute command.
 
@@ -538,8 +538,8 @@ class CLI(Instruction):  # pylint: disable=too-few-public-methods
         0x58: (AddressMode.IMPLIED, 1, 2, 0)
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
         """
         Execute command.
 
@@ -561,8 +561,8 @@ class CLV(Instruction):  # pylint: disable=too-few-public-methods
         0xB8: (AddressMode.IMPLIED, 1, 2, 0)
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
         """
         Execute command.
 
@@ -591,8 +591,8 @@ class CMP(Instruction):  # pylint: disable=too-few-public-methods
         0xD1: (AddressMode.INDIRECT_Y_INDEXED, 2, 5, 1)
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):
         """
         Execute command.
 
@@ -602,7 +602,7 @@ class CMP(Instruction):  # pylint: disable=too-few-public-methods
         :param memory: Memory instance.
         :return: Nothing.
         """
-        mode, _, _, _ = CMP.INSTRUCTIONS[opcode]
+        mode, _, _, _ = cls.INSTRUCTIONS[opcode]
         operand, _ = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
         val = mcu.a.value - operand
@@ -620,8 +620,8 @@ class CPX(Instruction):  # pylint: disable=too-few-public-methods
         0xEC: (AddressMode.ABSOLUTE, 3, 4, 0)
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):
         """
         Execute command.
 
@@ -631,7 +631,7 @@ class CPX(Instruction):  # pylint: disable=too-few-public-methods
         :param memory: Memory instance.
         :return: Nothing.
         """
-        mode, _, _, _ = CPX.INSTRUCTIONS[opcode]
+        mode, _, _, _ = cls.INSTRUCTIONS[opcode]
         operand, _ = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
         val = mcu.x.value - operand
@@ -649,8 +649,8 @@ class CPY(Instruction):  # pylint: disable=too-few-public-methods
         0xCC: (AddressMode.ABSOLUTE, 3, 4, 0)
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):
         """
         Execute command.
 
@@ -660,7 +660,7 @@ class CPY(Instruction):  # pylint: disable=too-few-public-methods
         :param memory: Memory instance.
         :return: Nothing.
         """
-        mode, _, _, _ = CPY.INSTRUCTIONS[opcode]
+        mode, _, _, _ = cls.INSTRUCTIONS[opcode]
         operand, _ = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
         val = mcu.y.value - operand
@@ -679,8 +679,8 @@ class DEC(Instruction):  # pylint: disable=too-few-public-methods
         0xDE: (AddressMode.ABSOLUTE_X_INDEXED, 3, 7, 0)
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):
         """
         Execute command.
 
@@ -690,7 +690,7 @@ class DEC(Instruction):  # pylint: disable=too-few-public-methods
         :param memory: Memory instance.
         :return: Nothing.
         """
-        mode, _, _, _ = CPY.INSTRUCTIONS[opcode]
+        mode, _, _, _ = cls.INSTRUCTIONS[opcode]
         operand, address = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
         val = operand - 1
@@ -708,8 +708,8 @@ class DEX(Instruction):  # pylint: disable=too-few-public-methods
         0xCA: (AddressMode.IMPLIED, 1, 2, 0)
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
         """
         Execute command.
 
@@ -735,8 +735,8 @@ class DEY(Instruction):  # pylint: disable=too-few-public-methods
         0x88: (AddressMode.IMPLIED, 1, 2, 0)
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
         """
         Execute command.
 
@@ -769,8 +769,8 @@ class EOR(Instruction):  # pylint: disable=too-few-public-methods
         0x51: (AddressMode.INDIRECT_Y_INDEXED, 2, 5, 1)
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):
         """
         Execute command.
 
@@ -780,7 +780,7 @@ class EOR(Instruction):  # pylint: disable=too-few-public-methods
         :param memory: Memory instance.
         :return: Nothing.
         """
-        mode, _, _, _ = EOR.INSTRUCTIONS[opcode]
+        mode, _, _, _ = cls.INSTRUCTIONS[opcode]
         operand, _ = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
         val = mcu.a.value ^ operand
@@ -801,8 +801,8 @@ class INC(Instruction):  # pylint: disable=too-few-public-methods
         0xFE: (AddressMode.ABSOLUTE_X_INDEXED, 3, 7, 0)
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):
         """
         Execute command.
 
@@ -812,7 +812,7 @@ class INC(Instruction):  # pylint: disable=too-few-public-methods
         :param memory: Memory instance.
         :return: Nothing.
         """
-        mode, _, _, _ = INC.INSTRUCTIONS[opcode]
+        mode, _, _, _ = cls.INSTRUCTIONS[opcode]
         operand, address = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
         val = operand + 1
@@ -830,8 +830,8 @@ class INX(Instruction):  # pylint: disable=too-few-public-methods
         0xE8: (AddressMode.IMPLIED, 1, 2, 0)
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
         """
         Execute command.
 
@@ -856,8 +856,8 @@ class INY(Instruction):  # pylint: disable=too-few-public-methods
         0xC8: (AddressMode.IMPLIED, 1, 2, 0)
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
         """
         Execute command.
 
@@ -883,8 +883,8 @@ class JMP(Instruction):  # pylint: disable=too-few-public-methods
         0x6C: (AddressMode.INDIRECT, 3, 5, 0)
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):
         """
         Execute command.
 
@@ -894,7 +894,7 @@ class JMP(Instruction):  # pylint: disable=too-few-public-methods
         :param memory: Memory instance.
         :return: Nothing.
         """
-        mode, _, _, _ = JMP.INSTRUCTIONS[opcode]
+        mode, _, _, _ = cls.INSTRUCTIONS[opcode]
         operand, _ = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
         mcu.pc.value = operand
@@ -909,8 +909,8 @@ class JSR(Instruction):  # pylint: disable=too-few-public-methods
         0x20: (AddressMode.ABSOLUTE, 3, 6, 0)
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):
         """
         Execute command.
 
@@ -920,7 +920,7 @@ class JSR(Instruction):  # pylint: disable=too-few-public-methods
         :param memory: Memory instance.
         :return: Nothing.
         """
-        mode, _, _, _ = JMP.INSTRUCTIONS[opcode]
+        mode, _, _, _ = cls.INSTRUCTIONS[opcode]
         operand, _ = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
         memory.write_word(mcu.sp.value, mcu.pc + 2)
@@ -945,8 +945,8 @@ class LDA(Instruction):  # pylint: disable=too-few-public-methods
         0xB1: (AddressMode.INDIRECT_Y_INDEXED, 2, 5, 1)
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):
         """
         Execute command.
 
@@ -956,7 +956,7 @@ class LDA(Instruction):  # pylint: disable=too-few-public-methods
         :param memory: Memory instance.
         :return: Nothing.
         """
-        mode, _, _, _ = LDA.INSTRUCTIONS[opcode]
+        mode, _, _, _ = cls.INSTRUCTIONS[opcode]
         operand, _ = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
         mcu.a.value = operand
@@ -977,8 +977,8 @@ class LDX(Instruction):  # pylint: disable=too-few-public-methods
         0xBE: (AddressMode.ABSOLUTE_Y_INDEXED, 3, 4, 1)
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):
         """
         Execute command.
 
@@ -988,7 +988,7 @@ class LDX(Instruction):  # pylint: disable=too-few-public-methods
         :param memory: Memory instance.
         :return: Nothing.
         """
-        mode, _, _, _ = LDX.INSTRUCTIONS[opcode]
+        mode, _, _, _ = cls.INSTRUCTIONS[opcode]
         operand, _ = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
         mcu.x.value = operand
@@ -1009,8 +1009,8 @@ class LDY(Instruction):  # pylint: disable=too-few-public-methods
         0xBC: (AddressMode.ABSOLUTE_Y_INDEXED, 3, 4, 1)
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):
         """
         Execute command.
 
@@ -1020,7 +1020,7 @@ class LDY(Instruction):  # pylint: disable=too-few-public-methods
         :param memory: Memory instance.
         :return: Nothing.
         """
-        mode, _, _, _ = LDY.INSTRUCTIONS[opcode]
+        mode, _, _, _ = cls.INSTRUCTIONS[opcode]
         operand, _ = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
         mcu.y.value = operand
@@ -1041,8 +1041,8 @@ class LSR(Instruction):  # pylint: disable=too-few-public-methods
         0x5E: (AddressMode.ABSOLUTE_X_INDEXED, 3, 7, 0)
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):
         """
         Execute command.
 
@@ -1052,7 +1052,7 @@ class LSR(Instruction):  # pylint: disable=too-few-public-methods
         :param memory: Memory instance.
         :return: Nothing.
         """
-        mode, _, _, _ = LSR.INSTRUCTIONS[opcode]
+        mode, _, _, _ = cls.INSTRUCTIONS[opcode]
         operand, address = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
         carry = operand & 0x01
@@ -1076,8 +1076,8 @@ class NOP(Instruction):  # pylint: disable=too-few-public-methods
         0xEA: (AddressMode.IMPLIED, 1, 2, 0)
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):
         """
         Execute command.
 
@@ -1106,8 +1106,8 @@ class ORA(Instruction):  # pylint: disable=too-few-public-methods
         0x11: (AddressMode.INDIRECT_Y_INDEXED, 2, 5, 1)
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):
         """
         Execute command.
 
@@ -1117,7 +1117,7 @@ class ORA(Instruction):  # pylint: disable=too-few-public-methods
         :param memory: Memory instance.
         :return: Nothing.
         """
-        mode, _, _, _ = ORA.INSTRUCTIONS[opcode]
+        mode, _, _, _ = cls.INSTRUCTIONS[opcode]
         operand, _ = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
         val = mcu.a.value | operand
@@ -1135,8 +1135,8 @@ class PHA(Instruction):  # pylint: disable=too-few-public-methods
         0x48: (AddressMode.IMPLIED, 1, 3, 0),
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
         """
         Execute command.
 
@@ -1159,8 +1159,8 @@ class PHP(Instruction):  # pylint: disable=too-few-public-methods
         0x08: (AddressMode.IMPLIED, 1, 3, 0),
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
         """
         Execute command.
 
@@ -1183,8 +1183,8 @@ class PLA(Instruction):  # pylint: disable=too-few-public-methods
         0x68: (AddressMode.IMPLIED, 1, 4, 0),
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
         """
         Execute command.
 
@@ -1207,8 +1207,8 @@ class PLP(Instruction):  # pylint: disable=too-few-public-methods
         0x28: (AddressMode.IMPLIED, 1, 4, 0)
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
         """
         Execute command.
 
@@ -1235,8 +1235,8 @@ class ROL(Instruction):  # pylint: disable=too-few-public-methods
         0x3E: (AddressMode.ABSOLUTE_X_INDEXED, 3, 7, 0)
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):
         """
         Execute command.
 
@@ -1246,7 +1246,7 @@ class ROL(Instruction):  # pylint: disable=too-few-public-methods
         :param memory: Memory instance.
         :return: Nothing.
         """
-        mode, _, _, _ = ROL.INSTRUCTIONS[opcode]
+        mode, _, _, _ = cls.INSTRUCTIONS[opcode]
         operand, address = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
         c_flag = (operand & 255) >> 7
@@ -1274,8 +1274,8 @@ class ROR(Instruction):  # pylint: disable=too-few-public-methods
         0x7E: (AddressMode.ABSOLUTE_X_INDEXED, 3, 7, 0)
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):
         """
         Execute command.
 
@@ -1285,7 +1285,7 @@ class ROR(Instruction):  # pylint: disable=too-few-public-methods
         :param memory: Memory instance.
         :return: Nothing.
         """
-        mode, _, _, _ = ROR.INSTRUCTIONS[opcode]
+        mode, _, _, _ = cls.INSTRUCTIONS[opcode]
         operand, address = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
         c_flag = (operand & 1)
@@ -1309,8 +1309,8 @@ class RTI(Instruction):  # pylint: disable=too-few-public-methods
         0x40: (AddressMode.IMPLIED, 1, 6, 0),
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
         """
         Execute command.
 
@@ -1336,8 +1336,8 @@ class RTS(Instruction):  # pylint: disable=too-few-public-methods
         0x60: (AddressMode.IMPLIED, 1, 6, 0)
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
         """
         Execute command.
 
@@ -1369,8 +1369,8 @@ class SBC(Instruction):  # pylint: disable=too-few-public-methods
         0xF1: (AddressMode.INDIRECT_Y_INDEXED, 2, 5, 1)
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):
         """
         Execute command.
 
@@ -1380,7 +1380,7 @@ class SBC(Instruction):  # pylint: disable=too-few-public-methods
         :param memory: Memory instance.
         :return: Nothing.
         """
-        mode, _, _, _ = SBC.INSTRUCTIONS[opcode]
+        mode, _, _, _ = cls.INSTRUCTIONS[opcode]
         operand, _ = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
         val = mcu.a.signed - operand - mcu.sr.C
@@ -1399,8 +1399,8 @@ class SEC(Instruction):  # pylint: disable=too-few-public-methods
         0x38: (AddressMode.IMPLIED, 1, 2, 0),
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
         """
         Execute command.
 
@@ -1422,8 +1422,8 @@ class SED(Instruction):  # pylint: disable=too-few-public-methods
         0xF8: (AddressMode.IMPLIED, 1, 2, 0),
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
         """
         Execute command.
 
@@ -1445,8 +1445,8 @@ class SEI(Instruction):  # pylint: disable=too-few-public-methods
         0x78: (AddressMode.IMPLIED, 1, 2, 0),
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
         """
         Execute command.
 
@@ -1474,8 +1474,8 @@ class STA(Instruction):  # pylint: disable=too-few-public-methods
         0x91: (AddressMode.INDIRECT_Y_INDEXED, 2, 6, 0),
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):
         """
         Execute command.
 
@@ -1485,7 +1485,7 @@ class STA(Instruction):  # pylint: disable=too-few-public-methods
         :param memory: Memory instance.
         :return: Nothing.
         """
-        mode, _, _, _ = STA.INSTRUCTIONS[opcode]
+        mode, _, _, _ = cls.INSTRUCTIONS[opcode]
         _, address = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
         memory.write_byte(address, mcu.a.value)
@@ -1502,8 +1502,8 @@ class STX(Instruction):  # pylint: disable=too-few-public-methods
         0x8E: (AddressMode.ABSOLUTE, 3, 4, 0),
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):
         """
         Execute command.
 
@@ -1513,7 +1513,7 @@ class STX(Instruction):  # pylint: disable=too-few-public-methods
         :param memory: Memory instance.
         :return: Nothing.
         """
-        mode, _, _, _ = STX.INSTRUCTIONS[opcode]
+        mode, _, _, _ = cls.INSTRUCTIONS[opcode]
         _, address = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
         memory.write_byte(address, mcu.x.value)
@@ -1530,8 +1530,8 @@ class STY(Instruction):  # pylint: disable=too-few-public-methods
         0x8C: (AddressMode.ABSOLUTE, 3, 4, 0),
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):
         """
         Execute command.
 
@@ -1541,7 +1541,7 @@ class STY(Instruction):  # pylint: disable=too-few-public-methods
         :param memory: Memory instance.
         :return: Nothing.
         """
-        mode, _, _, _ = STY.INSTRUCTIONS[opcode]
+        mode, _, _, _ = cls.INSTRUCTIONS[opcode]
         _, address = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
         memory.write_byte(address, mcu.y.value)
@@ -1556,8 +1556,8 @@ class TAX(Instruction):  # pylint: disable=too-few-public-methods
         0xAA: (AddressMode.IMPLIED, 1, 2, 0)
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
         """
         Execute command.
 
@@ -1581,8 +1581,8 @@ class TAY(Instruction):  # pylint: disable=too-few-public-methods
         0xA8: (AddressMode.IMPLIED, 1, 2, 0)
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
         """
         Execute command.
 
@@ -1606,8 +1606,8 @@ class TSX(Instruction):  # pylint: disable=too-few-public-methods
         0xBA: (AddressMode.IMPLIED, 1, 2, 0)
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
         """
         Execute command.
 
@@ -1631,8 +1631,8 @@ class TXA(Instruction):  # pylint: disable=too-few-public-methods
         0x8A: (AddressMode.IMPLIED, 1, 2, 0)
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
         """
         Execute command.
 
@@ -1656,8 +1656,8 @@ class TXS(Instruction):  # pylint: disable=too-few-public-methods
         0x9A: (AddressMode.IMPLIED, 1, 2, 0)
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
         """
         Execute command.
 
@@ -1679,8 +1679,8 @@ class TYA(Instruction):  # pylint: disable=too-few-public-methods
         0x98: (AddressMode.IMPLIED, 1, 2, 0)
     }
 
-    @staticmethod
-    def execute(opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
+    @classmethod
+    def execute(cls, opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
         """
         Execute command.
 
