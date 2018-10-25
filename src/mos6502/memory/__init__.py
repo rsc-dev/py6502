@@ -10,7 +10,8 @@ __license__ = 'MIT'
 class Memory(object):
     """Class represents MOS 6502 memory."""
 
-    SIZE = 0x1900  # Default memory size is 64 KB
+    #SIZE = 0x1900  # Default memory size is 64 KB
+    SIZE = 0x11000
     PAGE = 0xff  # Page size. Default = 256 B
 
     def __init__(self, size=SIZE):

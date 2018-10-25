@@ -10,7 +10,7 @@ __license__ = 'MIT'
 
 from enum import Enum
 
-from mos6502.helpers import to_signed_byte
+from mos6502.helpers import to_signed_byte  # pylint: disable=import-error
 
 
 class AddressMode(Enum):
@@ -102,7 +102,17 @@ class AddressMode(Enum):
 
 class Instruction(object):  # pylint: disable=too-few-public-methods
     """Base class for assembly instructions."""
-    pass
+
+    @classmethod
+    def get_bytez(cls, opcode):
+        """
+        Get instruction bytes count.
+
+        :param opcode: Instruction opcode.
+        :return: Instruction bytes count.
+        """
+        _, bytez, _, _ = cls.INSTRUCTIONS[opcode]
+        return bytez
 
 
 class ADC(Instruction):  # pylint: disable=too-few-public-methods
@@ -135,11 +145,14 @@ class ADC(Instruction):  # pylint: disable=too-few-public-methods
         mode, _, _, _ = cls.INSTRUCTIONS[opcode]
         operand, _ = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
-        val = mcu.a.signed + operand + mcu.sr.C
+        val = mcu.a.value + operand + mcu.sr.C
 
         mcu.a.value = val
 
-        mcu.sr.set_flags(val, 'NZCV')
+        mcu.sr.N = 1 if mcu.a.signed < 0 else 0
+        mcu.sr.Z = 1 if val == 0 else 0
+        mcu.sr.C = 1 if val > 0xff else 0
+        mcu.sr.V = 1 if ((~(mcu.a.value ^ operand)) & (mcu.a.value ^ val) & 0x80) else 0
 
 
 class AND(Instruction):  # pylint: disable=too-few-public-methods
@@ -175,7 +188,8 @@ class AND(Instruction):  # pylint: disable=too-few-public-methods
         val = mcu.a.value & operand
         mcu.a.value = val
 
-        mcu.sr.set_flags(val, 'NZ')
+        mcu.sr.N = 1 if mcu.a.signed < 0 else 0
+        mcu.sr.Z = 1 if val == 0 else 0
 
 
 class ASL(Instruction):  # pylint: disable=too-few-public-methods
@@ -208,7 +222,9 @@ class ASL(Instruction):  # pylint: disable=too-few-public-methods
         val = mcu.a.value << operand
         mcu.a.value = val
 
-        mcu.sr.set_flags(val, 'NZC')
+        mcu.sr.N = 1 if mcu.a.signed < 0 else 0
+        mcu.sr.Z = 1 if val == 0 else 0
+        mcu.sr.C = 1 if val > 0xff else 0
 
 
 class BCC(Instruction):  # pylint: disable=too-few-public-methods
@@ -268,7 +284,7 @@ class BCS(Instruction):  # pylint: disable=too-few-public-methods
 class BEQ(Instruction):  # pylint: disable=too-few-public-methods
     """Branch on Carry Set"""
 
-    MNEMONIC = 'BCS'
+    MNEMONIC = 'BEQ'
     # Dict of tuples (#address_mode, #bytes, #cycles, #page_boundary_cycles) keyed by #opcode
     INSTRUCTIONS = {
         0xF0: (AddressMode.RELATIVE, 2, 3, 1)
@@ -289,7 +305,7 @@ class BEQ(Instruction):  # pylint: disable=too-few-public-methods
         operand, _ = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
         if mcu.sr.Z == 1:
-            mcu.pc.value += operand
+            mcu.pc.value = operand
 
 
 class BIT(Instruction):  # pylint: disable=too-few-public-methods
@@ -322,7 +338,7 @@ class BIT(Instruction):  # pylint: disable=too-few-public-methods
         mcu.sr.N = m7
         mcu.sr.V = m6
 
-        mcu.sr.set_flags(val, 'Z')
+        mcu.sr.Z = 1 if val == 0 else 0
 
 
 class BMI(Instruction):  # pylint: disable=too-few-public-methods
@@ -376,7 +392,7 @@ class BNE(Instruction):  # pylint: disable=too-few-public-methods
         operand, _ = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
         if mcu.sr.Z == 0:
-            mcu.pc.value += operand
+            mcu.pc.value = operand
 
 
 class BPL(Instruction):  # pylint: disable=too-few-public-methods
@@ -416,7 +432,7 @@ class BRK(Instruction):  # pylint: disable=too-few-public-methods
     }
 
     @classmethod
-    def execute(cls, opcode, bytez, mcu, memory):
+    def execute(cls, opcode, bytez, mcu, memory):  # pylint: disable=unused-argument
         """
         Execute command.
 
@@ -426,7 +442,7 @@ class BRK(Instruction):  # pylint: disable=too-few-public-methods
         :param memory: Memory instance.
         :return: Nothing.
         """
-        pass
+        mcu.sr.B = 1
 
 
 class BVC(Instruction):  # pylint: disable=too-few-public-methods
@@ -606,7 +622,10 @@ class CMP(Instruction):  # pylint: disable=too-few-public-methods
         operand, _ = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
         val = mcu.a.value - operand
-        mcu.sr.set_flags(val, 'NZC')
+
+        mcu.sr.N = 1 if val < 0 else 0
+        mcu.sr.Z = 1 if val == 0 else 0
+        mcu.sr.C = 1 if operand <= mcu.a.value else 0
 
 
 class CPX(Instruction):  # pylint: disable=too-few-public-methods
@@ -635,7 +654,10 @@ class CPX(Instruction):  # pylint: disable=too-few-public-methods
         operand, _ = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
         val = mcu.x.value - operand
-        mcu.sr.set_flags(val, 'NZC')
+
+        mcu.sr.N = 1 if val < 0 else 0
+        mcu.sr.Z = 1 if val == 0 else 0
+        mcu.sr.C = 1 if operand >= mcu.a.value else 0
 
 
 class CPY(Instruction):  # pylint: disable=too-few-public-methods
@@ -664,7 +686,10 @@ class CPY(Instruction):  # pylint: disable=too-few-public-methods
         operand, _ = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
         val = mcu.y.value - operand
-        mcu.sr.set_flags(val, 'NZC')
+
+        mcu.sr.N = 1 if val < 0 else 0
+        mcu.sr.Z = 1 if val == 0 else 0
+        mcu.sr.C = 1 if operand >= mcu.a.value else 0
 
 
 class DEC(Instruction):  # pylint: disable=too-few-public-methods
@@ -696,7 +721,8 @@ class DEC(Instruction):  # pylint: disable=too-few-public-methods
         val = operand - 1
         memory.write_byte(address, val)
 
-        mcu.sr.set_flags(val, 'NZ')
+        mcu.sr.N = 1 if val < 0 else 0
+        mcu.sr.Z = 1 if val == 0 else 0
 
 
 class DEX(Instruction):  # pylint: disable=too-few-public-methods
@@ -723,7 +749,8 @@ class DEX(Instruction):  # pylint: disable=too-few-public-methods
         val = mcu.x.value - 1
         mcu.x.value = val
 
-        mcu.sr.set_flags(val, 'NZ')
+        mcu.sr.N = 1 if mcu.x.signed < 0 else 0
+        mcu.sr.Z = 1 if val == 0 else 0
 
 
 class DEY(Instruction):  # pylint: disable=too-few-public-methods
@@ -747,10 +774,11 @@ class DEY(Instruction):  # pylint: disable=too-few-public-methods
         :return: Nothing.
         """
 
-        val = mcu.x.value - 1
+        val = mcu.y.value - 1
         mcu.y.value = val
 
-        mcu.sr.set_flags(val, 'NZ')
+        mcu.sr.N = 1 if mcu.y.signed < 0 else 0
+        mcu.sr.Z = 1 if val == 0 else 0
 
 
 class EOR(Instruction):  # pylint: disable=too-few-public-methods
@@ -786,7 +814,8 @@ class EOR(Instruction):  # pylint: disable=too-few-public-methods
         val = mcu.a.value ^ operand
         mcu.a.value = val
 
-        mcu.sr.set_flags(val, 'NZ')
+        mcu.sr.N = 1 if mcu.a.signed < 0 else 0
+        mcu.sr.Z = 1 if val == 0 else 0
 
 
 class INC(Instruction):  # pylint: disable=too-few-public-methods
@@ -818,7 +847,8 @@ class INC(Instruction):  # pylint: disable=too-few-public-methods
         val = operand + 1
         memory.write_byte(address, val)
 
-        mcu.sr.set_flags(val, 'NZ')
+        mcu.sr.N = 1 if val < 0 else 0
+        mcu.sr.Z = 1 if val == 0 else 0
 
 
 class INX(Instruction):  # pylint: disable=too-few-public-methods
@@ -844,7 +874,8 @@ class INX(Instruction):  # pylint: disable=too-few-public-methods
         val = mcu.x.value + 1
         mcu.x.value = val
 
-        mcu.sr.set_flags(val, 'NZ')
+        mcu.sr.N = 1 if mcu.x.signed < 0 else 0
+        mcu.sr.Z = 1 if val == 0 else 0
 
 
 class INY(Instruction):  # pylint: disable=too-few-public-methods
@@ -870,7 +901,8 @@ class INY(Instruction):  # pylint: disable=too-few-public-methods
         val = mcu.y.value + 1
         mcu.y.value = val
 
-        mcu.sr.set_flags(val, 'NZ')
+        mcu.sr.N = 1 if mcu.y.signed < 0 else 0
+        mcu.sr.Z = 1 if val == 0 else 0
 
 
 class JMP(Instruction):  # pylint: disable=too-few-public-methods
@@ -895,9 +927,10 @@ class JMP(Instruction):  # pylint: disable=too-few-public-methods
         :return: Nothing.
         """
         mode, _, _, _ = cls.INSTRUCTIONS[opcode]
-        operand, _ = AddressMode.calculate_operand(mode, bytez, mcu, memory)
+        _, address = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
-        mcu.pc.value = operand
+        pc = address
+        mcu.pc.value = pc
 
 
 class JSR(Instruction):  # pylint: disable=too-few-public-methods
@@ -961,7 +994,8 @@ class LDA(Instruction):  # pylint: disable=too-few-public-methods
 
         mcu.a.value = operand
 
-        mcu.sr.set_flags(operand, 'NZ')
+        mcu.sr.N = 1 if mcu.a.signed < 0 else 0
+        mcu.sr.Z = 1 if operand == 0 else 0
 
 
 class LDX(Instruction):  # pylint: disable=too-few-public-methods
@@ -993,7 +1027,8 @@ class LDX(Instruction):  # pylint: disable=too-few-public-methods
 
         mcu.x.value = operand
 
-        mcu.sr.set_flags(operand, 'NZ')
+        mcu.sr.N = 1 if mcu.x.signed < 0 else 0
+        mcu.sr.Z = 1 if operand == 0 else 0
 
 
 class LDY(Instruction):  # pylint: disable=too-few-public-methods
@@ -1025,7 +1060,8 @@ class LDY(Instruction):  # pylint: disable=too-few-public-methods
 
         mcu.y.value = operand
 
-        mcu.sr.set_flags(operand, 'NZ')
+        mcu.sr.N = 1 if mcu.y.signed < 0 else 0
+        mcu.sr.Z = 1 if operand == 0 else 0
 
 
 class LSR(Instruction):  # pylint: disable=too-few-public-methods
@@ -1063,7 +1099,7 @@ class LSR(Instruction):  # pylint: disable=too-few-public-methods
         else:
             memory.write_byte(address, val)
 
-        mcu.sr.set_flags(val, 'Z')
+        mcu.sr.Z = 1 if val == 0 else 0
         mcu.sr.C = carry
 
 
@@ -1123,7 +1159,8 @@ class ORA(Instruction):  # pylint: disable=too-few-public-methods
         val = mcu.a.value | operand
         mcu.a.value = val
 
-        mcu.sr.set_flags(val, 'NZ')
+        mcu.sr.N = 1 if mcu.a.signed < 0 else 0
+        mcu.sr.Z = 1 if val == 0 else 0
 
 
 class PHA(Instruction):  # pylint: disable=too-few-public-methods
@@ -1251,14 +1288,15 @@ class ROL(Instruction):  # pylint: disable=too-few-public-methods
 
         c_flag = (operand & 255) >> 7
         operand = ((operand << 1) | mcu.sr.C)
-        mcu.sr.C = c_flag
 
         if address is not None:
             memory.write_byte(address, operand)
         else:
             mcu.a.value = operand
 
-        mcu.sr.set_flags(operand, 'NZC')
+        mcu.sr.N = 1 if to_signed_byte(operand) < 0 else 0
+        mcu.sr.Z = 1 if operand == 0 else 0
+        mcu.sr.C = c_flag
 
 
 class ROR(Instruction):  # pylint: disable=too-few-public-methods
@@ -1290,14 +1328,15 @@ class ROR(Instruction):  # pylint: disable=too-few-public-methods
 
         c_flag = (operand & 1)
         operand = ((operand >> 1) | (mcu.sr.C << 7))
-        mcu.sr.C = c_flag
 
         if address is not None:
             memory.write_byte(address, operand)
         else:
             mcu.a.value = operand
 
-        mcu.sr.set_flags(operand, 'NZC')
+        mcu.sr.N = 1 if operand < 0 else 0
+        mcu.sr.Z = 1 if operand == 0 else 0
+        mcu.sr.C = c_flag
 
 
 class RTI(Instruction):  # pylint: disable=too-few-public-methods
@@ -1387,7 +1426,10 @@ class SBC(Instruction):  # pylint: disable=too-few-public-methods
 
         mcu.a.value = val
 
-        mcu.sr.set_flags(val, 'NZCV')
+        mcu.sr.N = 1 if val < 0 else 0
+        mcu.sr.Z = 1 if val == 0 else 0
+        mcu.sr.C = 1 if val >= 0 else 0
+        mcu.sr.V = 1 if ((mcu.a.signed ^ operand) & (mcu.a.signed ^ val) & 0x80) else 0
 
 
 class SEC(Instruction):  # pylint: disable=too-few-public-methods
@@ -1569,7 +1611,8 @@ class TAX(Instruction):  # pylint: disable=too-few-public-methods
         """
         mcu.x.value = mcu.a.value
 
-        mcu.sr.set_flags(mcu.x.value, 'NZ')
+        mcu.sr.N = 1 if mcu.x.signed < 0 else 0
+        mcu.sr.Z = 1 if mcu.x.value == 0 else 0
 
 
 class TAY(Instruction):  # pylint: disable=too-few-public-methods
@@ -1594,7 +1637,8 @@ class TAY(Instruction):  # pylint: disable=too-few-public-methods
         """
         mcu.y.value = mcu.a.value
 
-        mcu.sr.set_flags(mcu.y.value, 'NZ')
+        mcu.sr.N = 1 if mcu.y.value < 0 else 0
+        mcu.sr.Z = 1 if mcu.y.value == 0 else 0
 
 
 class TSX(Instruction):  # pylint: disable=too-few-public-methods
@@ -1619,7 +1663,8 @@ class TSX(Instruction):  # pylint: disable=too-few-public-methods
         """
         mcu.x.value = mcu.sp.value
 
-        mcu.sr.set_flags(mcu.x.value, 'NZ')
+        mcu.sr.N = 1 if mcu.x.value < 0 else 0
+        mcu.sr.Z = 1 if mcu.x.value == 0 else 0
 
 
 class TXA(Instruction):  # pylint: disable=too-few-public-methods
@@ -1644,7 +1689,8 @@ class TXA(Instruction):  # pylint: disable=too-few-public-methods
         """
         mcu.a.value = mcu.x.value
 
-        mcu.sr.set_flags(mcu.a.value, 'NZ')
+        mcu.sr.N = 1 if mcu.a.value < 0 else 0
+        mcu.sr.Z = 1 if mcu.a.value == 0 else 0
 
 
 class TXS(Instruction):  # pylint: disable=too-few-public-methods
@@ -1692,7 +1738,21 @@ class TYA(Instruction):  # pylint: disable=too-few-public-methods
         """
         mcu.a.value = mcu.y.value
 
-        mcu.sr.set_flags(mcu.a.value, 'NZ')
+        mcu.sr.N = 1 if mcu.a.signed < 0 else 0
+        mcu.sr.Z = 1 if mcu.a.value == 0 else 0
+
+
+
+INSTRUCTIONS = {}
+clazz = [ADC, AND, ASL, BCC, BCS, BEQ, BIT, BMI, BNE, BPL, BRK, BVC, BVS, CLC,
+         CLD, CLI, CLV, CMP, CPX, CPY, DEC, DEX, DEY, EOR, INC, INX, INY, JMP,
+         JSR, LDA, LDX, LDY, LSR, NOP, ORA, PHA, PHP, PLA, PLP, ROL, ROR, RTI,
+         RTS, SBC, SEC, SED, SEI, STA, STX, STY, TAX, TAY, TSX, TXA, TXS, TYA]
+
+for c in clazz:
+    for k in c.INSTRUCTIONS:
+        INSTRUCTIONS[k] = c
+
 
 
 if __name__ == '__main__':

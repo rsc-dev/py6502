@@ -1,14 +1,16 @@
 #!/usr/bin/env python
 
+"""MOS6502 MCU."""
+
 __author__ = 'Radoslaw Matusiak'
 __copyright__ = 'Copyright (c) 2018 Radoslaw Matusiak'
 __license__ = 'MIT'
 
 
-from mos6502.helpers import to_signed_byte, to_unsigned_byte
+from mos6502.helpers import to_signed_byte, to_unsigned_byte  # pylint: disable=import-error
 
 
-class MCU(object):
+class MCU(object):  # pylint: disable=too-few-public-methods
     """6502 processor."""
 
     def __init__(self):
@@ -16,7 +18,10 @@ class MCU(object):
         self.a = A()
         self.x = X()
         self.y = Y()
+
         self.sp = SP()
+        self.sp.value = 0xff
+
         self.pc = PC()
         self.sr = SR()
         # pylint: enable=C0103
@@ -35,15 +40,31 @@ class _Register(object):
 
     @property
     def value(self):
+        """
+        Register value getter.
+
+        :return: Register value.
+        """
         return self._value
 
     @value.setter
     def value(self, val):
+        """
+        Register value setter.
+
+        :param val: Value to set.
+        :return: Nothing.
+        """
         val = val if val > 0 else to_unsigned_byte(val)
         self._value = val & self._mask
 
     @property
     def signed(self):
+        """
+        Register value getter.
+
+        :return: Signed value.
+        """
         return to_signed_byte(self._value)
 
 
@@ -82,6 +103,7 @@ class PC(_Register):
         _Register.__init__(self, 2)
 
 
+# pylint: disable=C0103
 class SR(_Register):
     """8 bit Status Register."""
 
@@ -107,23 +129,6 @@ class SR(_Register):
 
         return (self.value & mask) >> bit
 
-    def set_flags(self, val, flags):
-        """
-        Set flags according to given value.
-
-        :param val: Value.
-        :param flags: Flags to set string, i.e. 'NZ'
-        :return: Nothing.
-        """
-        for flag in flags:
-            if flag == 'N':
-                self.N = 1 if val < 0 else 0
-            elif flag == 'Z':
-                self.Z = 1 if val == 0 else 0
-            elif flag == 'C':
-                self.C = 1 if val > 0xff else 0
-
-    # pylint: disable=C0103
     @property
     def N(self):
         """Negative flag getter."""
