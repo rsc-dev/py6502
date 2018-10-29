@@ -35,32 +35,38 @@ class Emulator(object):
 
         :return: Nothing.
         """
-        if self.processor.sr.B == 0:
-            # 1. fetch
-            pc = self.processor.pc.value   # pylint: disable=invalid-name
-            opcode = self.memory.read_byte(pc)
+        # 1. fetch
+        self.processor.sr.B = 1
+        pc = self.processor.pc.value   # pylint: disable=invalid-name
+        opcode = self.memory.read_byte(pc)
 
-            # 2. decode
-            opcode_class = INSTRUCTIONS[opcode]
-            # TODO: this should be done in execute
-            bytez = opcode_class.get_bytez(opcode)
-            data = self.memory._memory[pc + 1:pc + bytez]  # pylint: disable=protected-access
+        # 2. decode
+        opcode_class = INSTRUCTIONS[opcode]
+        # TODO: this should be done in execute
+        bytez = opcode_class.get_bytez(opcode)
+        self.processor.pc.value += bytez
 
-            log = '{pc:04x} {op:02x}'.format(pc=pc, op=opcode)
-            temp = '{}' + ' {:02x}' * len(data) + '   ' * (2-len(data))
-            log = temp.format(log, *data)
-            log = '{log} {mnemonic}'.format(log=log, mnemonic=opcode_class.MNEMONIC)
-            log = '{log} A:{A:02x} X:{X:02x} Y:{Y:02x}'.format(
-                log=log, A=self.processor.a.value, X=self.processor.x.value, Y=self.processor.y.value)
-            print(log)
-            print('\tNV-BDIZC')
-            sr = self.processor.sr
-            print('\t{0}{1}1{2}{3}{4}{5}{6}'.format(sr.N, sr.V, sr.B, sr.D, sr.I, sr.Z, sr.C))
+        data = self.memory._memory[pc + 1:pc + bytez]  # pylint: disable=protected-access
 
+        log = '${pc:04x}  {op:02x}'.format(pc=pc, op=opcode)
+        temp = '{}' + ' {:02x}' * len(data) + '   ' * (2-len(data))
+        log = temp.format(log, *data)
 
-            # 3. execute
-            self.processor.pc.value += bytez
-            opcode_class.execute(opcode, data, self.processor, self.memory)
+        disasm = opcode_class.disassm(opcode, self.processor, self.memory, data)
+
+        log = '{log}  {disasm}'.format(log=log, disasm=disasm)
+        #log = '{log} A:{A:02x} X:{X:02x} Y:{Y:02x}'.format(
+        #    log=log, A=self.processor.a.value, X=self.processor.x.value, Y=self.processor.y.value)
+        print(log)
+        print()
+        print('       PC  AC XR YR SP NV-BDIZC')
+        sr = self.processor.sr
+        print('6502: {0:04x} {1:02x} {2:02x} {3:02x} {4:02x} {5}{6}{7}{8}{9}{10}{11}{12}'.format(
+            pc, self.processor.a.value, self.processor.x.value,
+            self.processor.y.value, self.processor.sp.value, sr.N, sr.V, sr._get_bit_value(5), sr.B, sr.D, sr.I, sr.Z, sr.C))
+
+        # 3. execute
+        opcode_class.execute(opcode, data, self.processor, self.memory)
 
     def run(self):
         """
@@ -68,8 +74,10 @@ class Emulator(object):
 
         :return: Nothing.
         """
-        while self.processor.sr.B == 0:
+        while self.memory.read_byte(self.processor.pc.value) != 0x00:  # BRK
             self.step()
+
+        print('BRK at {0}'.format(self.processor.pc.value))
 
 
 if __name__ == '__main__':

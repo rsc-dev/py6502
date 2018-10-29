@@ -89,4 +89,7 @@ class DbgCli(cmd.Cmd):
 
 if __name__ == '__main__':
     dbgCli = DbgCli()
-    dbgCli.cmdloop()
+    #dbgCli.cmdloop()
+    dbgCli.do_file('6502_functional_test.bin')
+    dbgCli.do_pc('400')
+    dbgCli.do_run(None)
