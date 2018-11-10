@@ -25,6 +25,8 @@ class MCU(object):  # pylint: disable=too-few-public-methods
 
         self.pc = PC()
         self.sr = SR()
+
+        self.cycles = 0
         # pylint: enable=C0103
 
 

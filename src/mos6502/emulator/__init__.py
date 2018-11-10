@@ -16,8 +16,8 @@ class Emulator(object):
     """6502 Emulator"""
 
     def __init__(self):
-        self.memory = Memory()
-        self.processor = MCU()
+        self._memory = Memory()
+        self._processor = MCU()
 
     def load(self, address, data):
         """
@@ -27,7 +27,7 @@ class Emulator(object):
         :param data: Data to be loaded.
         :return: Nothing.
         """
-        self.memory.load(address, data)
+        self._memory.load(address, data)
 
     def step(self):
         """
@@ -36,23 +36,22 @@ class Emulator(object):
         :return: Nothing.
         """
         # 1. fetch
-        self.processor.sr.B = 1
-        pc = self.processor.pc.value   # pylint: disable=invalid-name
-        opcode = self.memory.read_byte(pc)
+        self._processor.sr.B = 1
+        pc = self._processor.pc.value   # pylint: disable=invalid-name
+        opcode = self._memory.read_byte(pc)
 
         # 2. decode
         opcode_class = INSTRUCTIONS[opcode]
         # TODO: this should be done in execute
         bytez = opcode_class.get_bytez(opcode)
-        self.processor.pc.value += bytez
 
-        data = self.memory._memory[pc + 1:pc + bytez]  # pylint: disable=protected-access
+        data = self._memory._memory[pc + 1:pc + bytez]  # pylint: disable=protected-access
 
         log = '${pc:04x}  {op:02x}'.format(pc=pc, op=opcode)
         temp = '{}' + ' {:02x}' * len(data) + '   ' * (2-len(data))
         log = temp.format(log, *data)
 
-        disasm = opcode_class.disassm(opcode, self.processor, self.memory, data)
+        disasm = opcode_class.disassm(opcode, self._processor, self._memory, data)
 
         log = '{log}  {disasm}'.format(log=log, disasm=disasm)
         #log = '{log} A:{A:02x} X:{X:02x} Y:{Y:02x}'.format(
@@ -60,13 +59,14 @@ class Emulator(object):
         print(log)
         print()
         print('       PC  AC XR YR SP NV-BDIZC')
-        sr = self.processor.sr
+        sr = self._processor.sr
         print('6502: {0:04x} {1:02x} {2:02x} {3:02x} {4:02x} {5}{6}{7}{8}{9}{10}{11}{12}'.format(
-            pc, self.processor.a.value, self.processor.x.value,
-            self.processor.y.value, self.processor.sp.value, sr.N, sr.V, sr._get_bit_value(5), sr.B, sr.D, sr.I, sr.Z, sr.C))
+            pc, self._processor.a.value, self._processor.x.value,
+            self._processor.y.value, self._processor.sp.value, sr.N, sr.V, sr._get_bit_value(5), sr.B, sr.D, sr.I, sr.Z, sr.C))
 
         # 3. execute
-        opcode_class.execute(opcode, data, self.processor, self.memory)
+        opcode_class.execute(opcode, data, self._processor, self._memory)
+        self._processor.pc.value += bytez
 
     def run(self):
         """
@@ -74,10 +74,10 @@ class Emulator(object):
 
         :return: Nothing.
         """
-        while self.memory.read_byte(self.processor.pc.value) != 0x00:  # BRK
+        while self._memory.read_byte(self._processor.pc.value) != 0x00:  # BRK
             self.step()
 
-        print('BRK at {0}'.format(self.processor.pc.value))
+        print('BRK at {0}'.format(self._processor.pc.value))
 
 
 if __name__ == '__main__':

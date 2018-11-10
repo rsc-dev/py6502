@@ -77,11 +77,13 @@ class AddressMode(Enum):
         elif mode == AddressMode.INDEXED_X_INDIRECT:
             assert len(bytez) == 1, 'Invalid bytes length for Indexed Indirect address mode.'
             address = (bytez[0] + mcu.x.value) & 0xff
-            operand = memory[address] + (memory[address + 1] << 8)
+            add = memory[address] + (memory[address + 1] << 8)
+            operand = memory[add]
         elif mode == AddressMode.INDIRECT_Y_INDEXED:
             assert len(bytez) == 1, 'Invalid bytes length for Indirect Indexed address mode.'
             address = (bytez[0] + mcu.y.value) & 0xff
-            operand = memory[address] + (memory[address + 1] << 8)
+            add = memory[address] + (memory[address + 1] << 8)
+            operand = memory[add]
         elif mode == AddressMode.RELATIVE:
             assert len(bytez) == 1, 'Invalid bytes length for Relative address mode.'
             address = to_signed_byte(bytez[0]) + mcu.pc.value
@@ -194,14 +196,20 @@ class ADC(Instruction):  # pylint: disable=too-few-public-methods
         mode, _, _, _ = cls.INSTRUCTIONS[opcode]
         operand, _ = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
-        val = mcu.a.value + operand + mcu.sr.C
+        val = mcu.a.signed + operand + mcu.sr.C
 
-        mcu.a.value = val
 
-        mcu.sr.N = 1 if mcu.a.signed < 0 else 0
+        mcu.sr.C = 0
+        mcu.sr.Z = 0
+        mcu.sr.N = 0
+        mcu.sr.V = 0
+
+        mcu.sr.N = 1 if (val & (1 << 7)) > 0 else 0
         mcu.sr.Z = 1 if val == 0 else 0
         mcu.sr.C = 1 if val > 0xff else 0
-        mcu.sr.V = 1 if ((~(mcu.a.value ^ operand)) & (mcu.a.value ^ val) & 0x80) else 0
+        mcu.sr.V = 1 if (~(mcu.a.value ^ operand) & (mcu.a.value ^ val)) & 128 else 0
+
+        mcu.a.value = val
 
 
 class AND(Instruction):  # pylint: disable=too-few-public-methods
@@ -268,7 +276,7 @@ class ASL(Instruction):  # pylint: disable=too-few-public-methods
         mode, _, _, _ = cls.INSTRUCTIONS[opcode]
         operand, _ = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
-        val = mcu.a.value << operand
+        val = (mcu.a.value << operand) & 0xff
         mcu.a.value = val
 
         mcu.sr.N = 1 if mcu.a.signed < 0 else 0
@@ -364,7 +372,7 @@ class BIT(Instruction):  # pylint: disable=too-few-public-methods
     # Dict of tuples (#address_mode, #bytes, #cycles, #page_boundary_cycles) keyed by #opcode
     INSTRUCTIONS = {
         0x24: (AddressMode.ZEROPAGE, 2, 3, 0),
-        0x2C: (AddressMode.RELATIVE, 3, 4, 0)
+        0x2C: (AddressMode.ABSOLUTE, 3, 4, 0)
     }
 
     @classmethod
@@ -1362,7 +1370,7 @@ class ROL(Instruction):  # pylint: disable=too-few-public-methods
         operand, address = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
         c_flag = (operand & 255) >> 7
-        operand = ((operand << 1) | mcu.sr.C)
+        operand = (((operand << 1) | mcu.sr.C) & 0xff)
 
         if address is not None:
             memory.write_byte(address, operand)
@@ -1645,7 +1653,7 @@ class STY(Instruction):  # pylint: disable=too-few-public-methods
     # Dict of tuples (#address_mode, #bytes, #cycles, #page_boundary_cycles) keyed by #opcode
     INSTRUCTIONS = {
         0x84: (AddressMode.ZEROPAGE, 2, 3, 0),
-        0x94: (AddressMode.ZEROPAGE_Y_INDEXED, 2, 4, 0),
+        0x94: (AddressMode.ZEROPAGE_X_INDEXED, 2, 4, 0),
         0x8C: (AddressMode.ABSOLUTE, 3, 4, 0),
     }
 
