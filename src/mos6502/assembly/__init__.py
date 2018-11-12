@@ -925,7 +925,7 @@ class INC(Instruction):  # pylint: disable=too-few-public-methods
         val = operand + 1
         memory.write_byte(address, val)
 
-        mcu.sr.N = 1 if val < 0 else 0
+        mcu.sr.N = 1 if val > 127 else 0
         mcu.sr.Z = 1 if val == 0 else 0
 
 
