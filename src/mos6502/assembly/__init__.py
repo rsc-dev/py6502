@@ -502,7 +502,19 @@ class BRK(Instruction):  # pylint: disable=too-few-public-methods
         :param memory: Memory instance.
         :return: Nothing.
         """
+        memory.write_byte(mcu.sp.value + mcu.sp_base, (mcu.pc.value >> 8) & 0xff)
+        mcu.sp.value = (mcu.sp.value - 1) & 0xff
+
+        memory.write_byte(mcu.sp.value + mcu.sp_base, (mcu.pc.value + 1) & 0xff)
+        mcu.sp.value = (mcu.sp.value - 1) & 0xff
+
         mcu.sr.B = 1
+        memory.write_byte(mcu.sp.value + mcu.sp_base, mcu.sr.value & 0xff)
+        mcu.sp.value = (mcu.sp.value - 1) & 0xff
+
+        mcu.pc.value = (memory[0xffff] << 8) + memory[0xfffe]   # IRQ vector
+
+        mcu.sr.I = 1
 
 
 class BVC(Instruction):  # pylint: disable=too-few-public-methods
@@ -922,7 +934,7 @@ class INC(Instruction):  # pylint: disable=too-few-public-methods
         mode, _, _, _ = cls.INSTRUCTIONS[opcode]
         operand, address = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
-        val = operand + 1
+        val = (operand + 1) & 0xff
         memory.write_byte(address, val)
 
         mcu.sr.N = 1 if val > 127 else 0
