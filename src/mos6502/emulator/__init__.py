@@ -65,8 +65,8 @@ class Emulator(object):
             self._processor.y.value, self._processor.sp.value, sr.N, sr.V, sr._get_bit_value(5), sr.B, sr.D, sr.I, sr.Z, sr.C))
 
         # 3. execute
-        opcode_class.execute(opcode, data, self._processor, self._memory)
         self._processor.pc.value += bytez
+        opcode_class.execute(opcode, data, self._processor, self._memory)
 
     def run(self):
         """
