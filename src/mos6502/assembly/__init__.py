@@ -80,7 +80,7 @@ class AddressMode(Enum):
             address = memory[address] + (memory[(address + 1) & 0xff] << 8)
             operand = memory[address]
         elif mode == AddressMode.INDIRECT_Y_INDEXED:
-            assert len(bytez) == 1, 'Invalid bytes length for Indirect Indexed address mode. With page-wrap bug.'
+            assert len(bytez) == 1, 'Invalid bytes length for Indirect Indexed address mode.'
             address = (bytez[0]) & 0xff
             address = memory[address] + (memory[(address + 1) & 0xff] << 8) + mcu.y.value
             operand = memory[address]
@@ -284,7 +284,7 @@ class ASL(Instruction):  # pylint: disable=too-few-public-methods
 
         mcu.sr.N = 1 if val > 127 else 0
         mcu.sr.Z = 1 if val == 0 else 0
-        mcu.sr.C = 1 if val > 0xff else 0
+        mcu.sr.C = 1 if operand > 127 else 0
 
 
 class BCC(Instruction):  # pylint: disable=too-few-public-methods
