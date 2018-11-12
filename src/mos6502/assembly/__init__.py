@@ -75,14 +75,14 @@ class AddressMode(Enum):
             high = memory[address+1]
             address = high << 8 | low
         elif mode == AddressMode.INDEXED_X_INDIRECT:
-            assert len(bytez) == 1, 'Invalid bytes length for Indexed Indirect address mode.'
+            assert len(bytez) == 1, 'Invalid bytes length for Indexed Indirect address mode. With page-wrap bug.'
             address = (bytez[0] + mcu.x.value) & 0xff
-            address = memory[address] + (memory[address + 1] << 8)
+            address = memory[address] + (memory[(address + 1) & 0xff] << 8)
             operand = memory[address]
         elif mode == AddressMode.INDIRECT_Y_INDEXED:
-            assert len(bytez) == 1, 'Invalid bytes length for Indirect Indexed address mode.'
+            assert len(bytez) == 1, 'Invalid bytes length for Indirect Indexed address mode. With page-wrap bug.'
             address = (bytez[0]) & 0xff
-            address = memory[address] + (memory[address + 1] << 8) + mcu.y.value
+            address = memory[address] + (memory[(address + 1) & 0xff] << 8) + mcu.y.value
             operand = memory[address]
         elif mode == AddressMode.RELATIVE:
             assert len(bytez) == 1, 'Invalid bytes length for Relative address mode.'
