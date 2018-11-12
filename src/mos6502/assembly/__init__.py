@@ -81,8 +81,8 @@ class AddressMode(Enum):
             operand = memory[add]
         elif mode == AddressMode.INDIRECT_Y_INDEXED:
             assert len(bytez) == 1, 'Invalid bytes length for Indirect Indexed address mode.'
-            address = (bytez[0] + mcu.y.value) & 0xff
-            add = memory[address] + (memory[address + 1] << 8)
+            address = (bytez[0]) & 0xff
+            add = memory[address] + (memory[address + 1] << 8) + mcu.y.value + mcu.sr.C
             operand = memory[add]
         elif mode == AddressMode.RELATIVE:
             assert len(bytez) == 1, 'Invalid bytes length for Relative address mode.'
@@ -198,7 +198,6 @@ class ADC(Instruction):  # pylint: disable=too-few-public-methods
 
         val = mcu.a.signed + operand + mcu.sr.C
 
-
         mcu.sr.C = 0
         mcu.sr.Z = 0
         mcu.sr.N = 0
@@ -274,12 +273,16 @@ class ASL(Instruction):  # pylint: disable=too-few-public-methods
         :return: Nothing.
         """
         mode, _, _, _ = cls.INSTRUCTIONS[opcode]
-        operand, _ = AddressMode.calculate_operand(mode, bytez, mcu, memory)
+        operand, address = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
-        val = (mcu.a.value << operand) & 0xff
-        mcu.a.value = val
+        val = (operand << 1) & 0xff
 
-        mcu.sr.N = 1 if mcu.a.signed < 0 else 0
+        if address is not None:
+            memory.write_byte(address, val)
+        else:
+            mcu.a.value = val
+
+        mcu.sr.N = 1 if val > 127 else 0
         mcu.sr.Z = 1 if val == 0 else 0
         mcu.sr.C = 1 if val > 0xff else 0
 
@@ -389,7 +392,7 @@ class BIT(Instruction):  # pylint: disable=too-few-public-methods
         mode, _, _, _ = cls.INSTRUCTIONS[opcode]
         operand, _ = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
-        val = mcu.a.value << operand
+        val = mcu.a.value & operand
         m7 = 1 if (val & (1 << 7)) > 0 else 0  # pylint: disable=invalid-name
         m6 = 1 if (val & (1 << 6)) > 0 else 0  # pylint: disable=invalid-name
         mcu.sr.N = m7
@@ -1448,6 +1451,8 @@ class RTI(Instruction):  # pylint: disable=too-few-public-methods
         mcu.pc.value = memory.read_byte(mcu.sp.value)
         mcu.sp.value = mcu.sp.value + 1
 
+        mcu.sr.B = 1
+
 
 class RTS(Instruction):  # pylint: disable=too-few-public-methods
     """Return from Subroutine"""
@@ -1507,14 +1512,19 @@ class SBC(Instruction):  # pylint: disable=too-few-public-methods
         mode, _, _, _ = cls.INSTRUCTIONS[opcode]
         operand, _ = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
-        val = mcu.a.signed - operand - mcu.sr.C
+        val = mcu.a.signed + (~operand & 0xff) + mcu.sr.C
+
+        mcu.sr.C = 0
+        mcu.sr.Z = 0
+        mcu.sr.N = 0
+        mcu.sr.V = 0
+
+        mcu.sr.N = 1 if (val & (1 << 7)) > 0 else 0
+        mcu.sr.Z = 1 if (val & 0xff == 0) else 0
+        mcu.sr.C = 1 if val > 0xff else 0
+        mcu.sr.V = 1 if (~(mcu.a.value ^ operand) & (mcu.a.value ^ val)) & 128 else 0
 
         mcu.a.value = val
-
-        mcu.sr.N = 1 if val < 0 else 0
-        mcu.sr.Z = 1 if val == 0 else 0
-        mcu.sr.C = 1 if val >= 0 else 0
-        mcu.sr.V = 1 if ((mcu.a.signed ^ operand) & (mcu.a.signed ^ val) & 0x80) else 0
 
 
 class SEC(Instruction):  # pylint: disable=too-few-public-methods
