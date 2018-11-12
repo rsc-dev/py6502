@@ -1412,17 +1412,26 @@ class ROR(Instruction):  # pylint: disable=too-few-public-methods
         mode, _, _, _ = cls.INSTRUCTIONS[opcode]
         operand, address = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
-        c_flag = (operand & 1)
-        operand = ((operand >> 1) | (mcu.sr.C << 7))
+        if address is None:
+            operand = mcu.a.value
+
+        if mcu.sr.C:
+            if not operand & 0x01:
+                mcu.sr.C = 0
+
+            operand = operand >> 1 | (1 << 7)
+        else:
+            if operand & 0x01:
+                mcu.sr.C = 1
+            operand = operand >> 1
 
         if address is not None:
             memory.write_byte(address, operand)
         else:
             mcu.a.value = operand
 
-        mcu.sr.N = 1 if operand < 0 else 0
+        mcu.sr.N = 1 if operand > 127 else 0
         mcu.sr.Z = 1 if operand == 0 else 0
-        mcu.sr.C = c_flag
 
 
 class RTI(Instruction):  # pylint: disable=too-few-public-methods
