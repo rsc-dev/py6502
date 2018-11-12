@@ -77,13 +77,13 @@ class AddressMode(Enum):
         elif mode == AddressMode.INDEXED_X_INDIRECT:
             assert len(bytez) == 1, 'Invalid bytes length for Indexed Indirect address mode.'
             address = (bytez[0] + mcu.x.value) & 0xff
-            add = memory[address] + (memory[address + 1] << 8)
-            operand = memory[add]
+            address = memory[address] + (memory[address + 1] << 8)
+            operand = memory[address]
         elif mode == AddressMode.INDIRECT_Y_INDEXED:
             assert len(bytez) == 1, 'Invalid bytes length for Indirect Indexed address mode.'
             address = (bytez[0]) & 0xff
-            add = memory[address] + (memory[address + 1] << 8) + mcu.y.value + mcu.sr.C
-            operand = memory[add]
+            address = memory[address] + (memory[address + 1] << 8) + mcu.y.value
+            operand = memory[address]
         elif mode == AddressMode.RELATIVE:
             assert len(bytez) == 1, 'Invalid bytes length for Relative address mode.'
             address = to_signed_byte(bytez[0]) + mcu.pc.value
