@@ -1466,11 +1466,16 @@ class RTI(Instruction):  # pylint: disable=too-few-public-methods
         :param memory: Memory instance.
         :return: Nothing.
         """
-        mcu.sr.value = memory.read_byte(mcu.sp.value)
-        mcu.sp.value = mcu.sp.value + 1
+        mcu.sp.value = (mcu.sp.value + 1) & 0xff
+        mcu.sr.value = memory.read_byte(mcu.sp.value + mcu.sp_base)
 
-        mcu.pc.value = memory.read_byte(mcu.sp.value)
-        mcu.sp.value = mcu.sp.value + 1
+        mcu.sp.value = (mcu.sp.value + 1) & 0xff
+        pcl = memory.read_byte(mcu.sp.value + mcu.sp_base)
+
+        mcu.sp.value = (mcu.sp.value + 1) & 0xff
+        pch = memory.read_byte(mcu.sp.value + mcu.sp_base)
+
+        mcu.pc.value = (pch << 8) + pcl
 
         mcu.sr.B = 1
 
