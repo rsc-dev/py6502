@@ -961,7 +961,7 @@ class INX(Instruction):  # pylint: disable=too-few-public-methods
         :param memory: Memory instance.
         :return: Nothing.
         """
-        val = mcu.x.value + 1
+        val = (mcu.x.value + 1) & 0xff
         mcu.x.value = val
 
         mcu.sr.N = 1 if mcu.x.signed < 0 else 0
