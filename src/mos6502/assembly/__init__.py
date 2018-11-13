@@ -988,7 +988,7 @@ class INY(Instruction):  # pylint: disable=too-few-public-methods
         :param memory: Memory instance.
         :return: Nothing.
         """
-        val = mcu.y.value + 1
+        val = (mcu.y.value + 1) & 0xff
         mcu.y.value = val
 
         mcu.sr.N = 1 if mcu.y.signed < 0 else 0
