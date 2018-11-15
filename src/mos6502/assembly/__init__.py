@@ -1134,9 +1134,9 @@ class LDY(Instruction):  # pylint: disable=too-few-public-methods
     INSTRUCTIONS = {
         0xA0: (AddressMode.IMMEDIATE, 2, 2, 0),
         0xA4: (AddressMode.ZEROPAGE, 2, 3, 0),
-        0xB4: (AddressMode.ZEROPAGE_Y_INDEXED, 2, 4, 0),
+        0xB4: (AddressMode.ZEROPAGE_X_INDEXED, 2, 4, 0),
         0xAC: (AddressMode.ABSOLUTE, 3, 4, 0),
-        0xBC: (AddressMode.ABSOLUTE_Y_INDEXED, 3, 4, 1)
+        0xBC: (AddressMode.ABSOLUTE_X_INDEXED, 3, 4, 1)
     }
 
     @classmethod
