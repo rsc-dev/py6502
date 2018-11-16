@@ -20,7 +20,7 @@ class TestRegs(unittest.TestCase):
         self.sp = SP()
         self.sr = SR()
 
-        self.regs_8_b = [self.a, self.x, self.y, self.sp, self.sr]
+        self.regs_8_b = [self.a, self.x, self.y, self.sp]
 
     def test_init_value(self):
         for reg in self.regs_8_b:
@@ -78,31 +78,31 @@ class TestSR(unittest.TestCase):
     def test_flags(self):
         self.sr.N = 1
 
-        assert self.sr.value == 1 << 7, 'Invalid SR.N flag value!'
+        assert self.sr.value == 1 << 7 | 1 << 5, 'Invalid SR.N flag value!'
         self.sr.N = 0
 
         self.sr.V = 1
-        assert self.sr.value == 1 << 6, 'Invalid SR.V flag value!'
+        assert self.sr.value == 1 << 6 | 1 << 5, 'Invalid SR.V flag value!'
         self.sr.V = 0
 
         self.sr.B = 1
-        assert self.sr.value == 1 << 4, 'Invalid SR.B flag value!'
+        assert self.sr.value == 1 << 4 | 1 << 5, 'Invalid SR.B flag value!'
         self.sr.B = 0
 
         self.sr.D = 1
-        assert self.sr.value == 1 << 3, 'Invalid SR.D flag value!'
+        assert self.sr.value == 1 << 3 | 1 << 5, 'Invalid SR.D flag value!'
         self.sr.D = 0
 
         self.sr.I = 1
-        assert self.sr.value == 1 << 2, 'Invalid SR.I flag value!'
+        assert self.sr.value == 1 << 2 | 1 << 5, 'Invalid SR.I flag value!'
         self.sr.I = 0
 
         self.sr.Z = 1
-        assert self.sr.value == 1 << 1, 'Invalid SR.Z flag value!'
+        assert self.sr.value == 1 << 1 | 1 << 5, 'Invalid SR.Z flag value!'
         self.sr.Z = 0
 
         self.sr.C = 1
-        assert self.sr.value == 1, 'Invalid SR.C flag value!'
+        assert self.sr.value == 1 | 1 << 5, 'Invalid SR.C flag value!'
         self.sr.C = 0
 
     def test_invalid_flag_value(self):
