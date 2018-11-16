@@ -17,7 +17,7 @@ class TestMemory(unittest.TestCase):
         self.memory = Memory()
 
     def test_default_mem(self):
-        assert self.memory._size == 0x1900, 'Invalid default memory size!'
+        assert self.memory._size == 0x10000, 'Invalid default memory size!'
         assert len(self.memory._memory) == self.memory._size, 'Invalid initial memory size!'
 
     def test_simple_write(self):

@@ -21,6 +21,7 @@ class MCU(object):  # pylint: disable=too-few-public-methods
 
         self.sp = SP()
         self.sp.value = 0xff
+        self.sp_base = 1 << 8
 
         self.pc = PC()
         self.sr = SR()
@@ -38,8 +39,7 @@ class _Register(object):
         self._mask = (2 ** (8 * size)) - 1
         self._value = 0x00
 
-    @property
-    def value(self):
+    def _value_get(self):
         """
         Register value getter.
 
@@ -47,8 +47,16 @@ class _Register(object):
         """
         return self._value
 
-    @value.setter
-    def value(self, val):
+    def _value_set(self, val):
+        """
+        Register value setter.
+
+        :param val: Value to set.
+        :return: Nothing.
+        """
+        self.value_set(val)
+
+    def value_set(self, val):
         """
         Register value setter.
 
@@ -57,6 +65,8 @@ class _Register(object):
         """
         val = val if val > 0 else to_unsigned_byte(val)
         self._value = val & self._mask
+
+    value = property(_value_get, _value_set)
 
     @property
     def signed(self):
@@ -109,6 +119,7 @@ class SR(_Register):
 
     def __init__(self):
         _Register.__init__(self, 1)
+        self._set_bit_value(5, 1)
 
     def _set_bit_value(self, bit, val):
         """Helper method for setting given bit to 0 or 1 value."""
@@ -128,6 +139,17 @@ class SR(_Register):
         mask = 1 << bit
 
         return (self.value & mask) >> bit
+
+    @_Register.value.setter
+    def value(self, val):  # pylint: disable=no-self-use
+        """Overriden value setter to make sure unused bit is set."""
+        val |= 1 << 5
+        super().value_set(val)  # pylint: disable=missing-super-argument
+
+    @property
+    def UNUSED(self):
+        """Unusued bit."""
+        return self._get_bit_value(5)
 
     @property
     def N(self):

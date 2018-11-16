@@ -10,8 +10,7 @@ __license__ = 'MIT'
 class Memory(object):
     """Class represents MOS 6502 memory."""
 
-    #SIZE = 0x1900  # Default memory size is 64 KB
-    SIZE = 0x11000
+    SIZE = 0x10000  # Default memory size is 64 KB
     PAGE = 0xff  # Page size. Default = 256 B
 
     def __init__(self, size=SIZE):
@@ -48,34 +47,6 @@ class Memory(object):
         """
         assert address < self._size, 'Address out of space!'
         self._memory[address] = value & 0xff
-
-    def read_word(self, address):
-        """
-        Read word from given memory address.
-
-        :param address: Memory address.
-        :return: Word value from given memory address.
-        """
-        assert address < self._size, 'Address out of space!'
-
-        val = self._memory[address] + self._memory[address + 1] << 8
-        return val
-
-    def write_word(self, address, value):
-        """
-        Write word to given memory address.
-
-        :param address: Memory address.
-        :param value: Word value to write.
-        :return: Nothing.
-        """
-        assert address < self._size, 'Address out of space!'
-
-        low = value & 0xff
-        high = (value >> 8) & 0xff
-
-        self._memory[address] = low
-        self._memory[address + 1] = high
 
     def load(self, address, data):
         """

@@ -14,7 +14,7 @@ def to_signed_byte(num):
     :param num: Unsigned byte number in range from 0 to 255.
     :return: Signed number in range from -128 to 127.
     """
-    assert 0 <= num <= 255, 'Value out of range (0 - 255)!'
+    assert 0 <= num <= 255, 'Value out of range (0 - 255): {0}!'.format(num)
 
     if num <= 127:
         ret = num
