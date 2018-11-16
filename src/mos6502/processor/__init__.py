@@ -25,8 +25,6 @@ class MCU(object):  # pylint: disable=too-few-public-methods
 
         self.pc = PC()
         self.sr = SR()
-
-        self.cycles = 0
         # pylint: enable=C0103
 
 
@@ -143,10 +141,15 @@ class SR(_Register):
         return (self.value & mask) >> bit
 
     @_Register.value.setter
-    def value(self, val):
+    def value(self, val):  # pylint: disable=no-self-use
         """Overriden value setter to make sure unused bit is set."""
         val |= 1 << 5
-        super().value_set(val)
+        super().value_set(val)  # pylint: disable=missing-super-argument
+
+    @property
+    def UNUSED(self):
+        """Unusued bit."""
+        return self._get_bit_value(5)
 
     @property
     def N(self):

@@ -42,7 +42,6 @@ class Emulator(object):
 
         # 2. decode
         opcode_class = INSTRUCTIONS[opcode]
-        # TODO: this should be done in execute
         bytez = opcode_class.get_bytez(opcode)
 
         data = self._memory._memory[pc + 1:pc + bytez]  # pylint: disable=protected-access
@@ -54,15 +53,14 @@ class Emulator(object):
         disasm = opcode_class.disassm(opcode, self._processor, self._memory, data)
 
         log = '{log}  {disasm}'.format(log=log, disasm=disasm)
-        #log = '{log} A:{A:02x} X:{X:02x} Y:{Y:02x}'.format(
-        #    log=log, A=self.processor.a.value, X=self.processor.x.value, Y=self.processor.y.value)
         print(log)
         print()
         print('       PC  AC XR YR SP NV-BDIZC')
-        sr = self._processor.sr
+        sr = self._processor.sr  # pylint: disable=invalid-name
         print('6502: {0:04x} {1:02x} {2:02x} {3:02x} {4:02x} {5}{6}{7}{8}{9}{10}{11}{12}'.format(
             pc, self._processor.a.value, self._processor.x.value,
-            self._processor.y.value, self._processor.sp.value, sr.N, sr.V, sr._get_bit_value(5), sr.B, sr.D, sr.I, sr.Z, sr.C))
+            self._processor.y.value, self._processor.sp.value,
+            sr.N, sr.V, sr.UNUSED, sr.B, sr.D, sr.I, sr.Z, sr.C))
 
         # 3. execute
         self._processor.pc.value += bytez

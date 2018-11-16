@@ -75,7 +75,8 @@ class AddressMode(Enum):
             high = memory[address+1]
             address = high << 8 | low
         elif mode == AddressMode.INDEXED_X_INDIRECT:
-            assert len(bytez) == 1, 'Invalid bytes length for Indexed Indirect address mode. With page-wrap bug.'
+            assert len(bytez) == 1, \
+                'Invalid bytes length for Indexed Indirect address mode. With page-wrap bug.'
             address = (bytez[0] + mcu.x.value) & 0xff
             address = memory[address] + (memory[(address + 1) & 0xff] << 8)
             operand = memory[address]
@@ -111,6 +112,17 @@ class Instruction(object):  # pylint: disable=too-few-public-methods
 
     @classmethod
     def disassm(cls, opcode, mcu, memory, bytez):
+        """
+        Disassm given opcode.
+
+        :param opcode: Opcode value.
+        :param mcu: MCU instance.
+        :param memory: Memory instance.
+        :param bytez: Instruction bytes.
+        :return: Disassmed instruction.
+        """
+        # pylint: disable=no-member
+        # pylint: disable=too-many-branches
         ret = ''
 
         address_mode, _, _, _ = cls.INSTRUCTIONS[opcode]
@@ -143,16 +155,20 @@ class Instruction(object):  # pylint: disable=too-few-public-methods
             operand, address = AddressMode.calculate_operand(address_mode, bytez, mcu, memory)
             ret = '{0} ${1:04x}'.format(cls.MNEMONIC, address)
         elif address_mode == AddressMode.ZEROPAGE:
-            pass
+            operand, address = AddressMode.calculate_operand(address_mode, bytez, mcu, memory)
+            ret = '{0} ${1:02x}'.format(cls.MNEMONIC, address)
         elif address_mode == AddressMode.ZEROPAGE_X_INDEXED:
-            pass
+            operand, address = AddressMode.calculate_operand(address_mode, bytez, mcu, memory)
+            ret = '{0} ${1:02x},X'.format(cls.MNEMONIC, address)
         elif address_mode == AddressMode.ZEROPAGE_Y_INDEXED:
-            pass
-
+            operand, address = AddressMode.calculate_operand(address_mode, bytez, mcu, memory)
+            ret = '{0} ${1:02x},Y'.format(cls.MNEMONIC, address)
         else:
             ret = '{0}'.format(cls.MNEMONIC)
 
         return ret
+        # pylint: enable=too-many-branches
+        # pylint: enable=no-member
 
     @classmethod
     def get_bytez(cls, opcode):
@@ -162,7 +178,7 @@ class Instruction(object):  # pylint: disable=too-few-public-methods
         :param opcode: Instruction opcode.
         :return: Instruction bytes count.
         """
-        _, bytez, _, _ = cls.INSTRUCTIONS[opcode]
+        _, bytez, _, _ = cls.INSTRUCTIONS[opcode]  # pylint: disable=no-member
         return bytez
 
 
@@ -308,7 +324,7 @@ class BCC(Instruction):  # pylint: disable=too-few-public-methods
         :return: Nothing.
         """
         mode, _, _, _ = cls.INSTRUCTIONS[opcode]
-        operand, address = AddressMode.calculate_operand(mode, bytez, mcu, memory)
+        _, address = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
         if mcu.sr.C == 0:
             mcu.pc.value = address
@@ -335,7 +351,7 @@ class BCS(Instruction):  # pylint: disable=too-few-public-methods
         :return: Nothing.
         """
         mode, _, _, _ = cls.INSTRUCTIONS[opcode]
-        operand, address = AddressMode.calculate_operand(mode, bytez, mcu, memory)
+        _, address = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
         if mcu.sr.C == 1:
             mcu.pc.value = address
@@ -362,7 +378,7 @@ class BEQ(Instruction):  # pylint: disable=too-few-public-methods
         :return: Nothing.
         """
         mode, _, _, _ = cls.INSTRUCTIONS[opcode]
-        operand, address = AddressMode.calculate_operand(mode, bytez, mcu, memory)
+        _, address = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
         if mcu.sr.Z == 1:
             mcu.pc.value = address
@@ -422,7 +438,7 @@ class BMI(Instruction):  # pylint: disable=too-few-public-methods
         :return: Nothing.
         """
         mode, _, _, _ = cls.INSTRUCTIONS[opcode]
-        operand, address = AddressMode.calculate_operand(mode, bytez, mcu, memory)
+        _, address = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
         if mcu.sr.N == 1:
             mcu.pc.value = address
@@ -449,7 +465,7 @@ class BNE(Instruction):  # pylint: disable=too-few-public-methods
         :return: Nothing.
         """
         mode, _, _, _ = cls.INSTRUCTIONS[opcode]
-        operand, address = AddressMode.calculate_operand(mode, bytez, mcu, memory)
+        _, address = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
         if mcu.sr.Z == 0:
             mcu.pc.value = address
@@ -476,7 +492,7 @@ class BPL(Instruction):  # pylint: disable=too-few-public-methods
         :return: Nothing.
         """
         mode, _, _, _ = cls.INSTRUCTIONS[opcode]
-        operand, address = AddressMode.calculate_operand(mode, bytez, mcu, memory)
+        _, address = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
         if mcu.sr.N == 0:
             mcu.pc.value = address
@@ -538,7 +554,7 @@ class BVC(Instruction):  # pylint: disable=too-few-public-methods
         :return: Nothing.
         """
         mode, _, _, _ = cls.INSTRUCTIONS[opcode]
-        operand, address = AddressMode.calculate_operand(mode, bytez, mcu, memory)
+        _, address = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
         if mcu.sr.V == 0:
             mcu.pc.value = address
@@ -565,7 +581,7 @@ class BVS(Instruction):  # pylint: disable=too-few-public-methods
         :return: Nothing.
         """
         mode, _, _, _ = cls.INSTRUCTIONS[opcode]
-        operand, address = AddressMode.calculate_operand(mode, bytez, mcu, memory)
+        _, address = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
         if mcu.sr.V == 1:
             mcu.pc.value = address
@@ -691,7 +707,7 @@ class CMP(Instruction):  # pylint: disable=too-few-public-methods
         :return: Nothing.
         """
         mode, _, _, _ = cls.INSTRUCTIONS[opcode]
-        operand, address = AddressMode.calculate_operand(mode, bytez, mcu, memory)
+        operand, _ = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
         val = mcu.a.value - operand
 
@@ -729,7 +745,7 @@ class CPX(Instruction):  # pylint: disable=too-few-public-methods
         :return: Nothing.
         """
         mode, _, _, _ = cls.INSTRUCTIONS[opcode]
-        operand, address = AddressMode.calculate_operand(mode, bytez, mcu, memory)
+        operand, _ = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
         val = mcu.x.value - operand
 
@@ -767,7 +783,7 @@ class CPY(Instruction):  # pylint: disable=too-few-public-methods
         :return: Nothing.
         """
         mode, _, _, _ = cls.INSTRUCTIONS[opcode]
-        operand, address = AddressMode.calculate_operand(mode, bytez, mcu, memory)
+        operand, _ = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
         val = mcu.y.value - operand
 
@@ -1043,7 +1059,7 @@ class JSR(Instruction):  # pylint: disable=too-few-public-methods
         :return: Nothing.
         """
         mode, _, _, _ = cls.INSTRUCTIONS[opcode]
-        operand, address = AddressMode.calculate_operand(mode, bytez, mcu, memory)
+        _, address = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
         ret_address = mcu.pc.value - 1
         low = ret_address & 0xff
@@ -1085,7 +1101,7 @@ class LDA(Instruction):  # pylint: disable=too-few-public-methods
         :return: Nothing.
         """
         mode, _, _, _ = cls.INSTRUCTIONS[opcode]
-        operand, address = AddressMode.calculate_operand(mode, bytez, mcu, memory)
+        operand, _ = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
         mcu.a.value = operand
 
@@ -1538,7 +1554,7 @@ class SBC(Instruction):  # pylint: disable=too-few-public-methods
         mode, _, _, _ = cls.INSTRUCTIONS[opcode]
         operand, _ = AddressMode.calculate_operand(mode, bytez, mcu, memory)
 
-        val = mcu.a.signed + (~operand & 0xff) + mcu.sr.C
+        val = mcu.a.signed + (~operand & 0xff) + mcu.sr.C  # pylint: disable=invalid-unary-operand-type
 
         mcu.sr.C = 0
         mcu.sr.Z = 0
@@ -1863,17 +1879,15 @@ class TYA(Instruction):  # pylint: disable=too-few-public-methods
         mcu.sr.Z = 1 if mcu.a.value == 0 else 0
 
 
-
 INSTRUCTIONS = {}
-clazz = [ADC, AND, ASL, BCC, BCS, BEQ, BIT, BMI, BNE, BPL, BRK, BVC, BVS, CLC,
+CLAZZ = [ADC, AND, ASL, BCC, BCS, BEQ, BIT, BMI, BNE, BPL, BRK, BVC, BVS, CLC,
          CLD, CLI, CLV, CMP, CPX, CPY, DEC, DEX, DEY, EOR, INC, INX, INY, JMP,
          JSR, LDA, LDX, LDY, LSR, NOP, ORA, PHA, PHP, PLA, PLP, ROL, ROR, RTI,
          RTS, SBC, SEC, SED, SEI, STA, STX, STY, TAX, TAY, TSX, TXA, TXS, TYA]
 
-for c in clazz:
+for c in CLAZZ:
     for k in c.INSTRUCTIONS:
         INSTRUCTIONS[k] = c
-
 
 
 if __name__ == '__main__':
